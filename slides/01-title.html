@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>01 标题页</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --cream-dark: #F2EEE6;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Soft grain texture */
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* Decorative shapes */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .blob-1 {
+      width: 520px; height: 520px;
+      background: #E8D5C4;
+      right: -120px; top: -80px;
+    }
+    .blob-2 {
+      width: 420px; height: 420px;
+      background: #D4E4D4;
+      right: 280px; bottom: -120px;
+    }
+
+    /* Git branch visual */
+    .branch-viz {
+      position: absolute;
+      right: 90px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 520px;
+      height: 640px;
+      opacity: 0.95;
+    }
+    .branch-line {
+      stroke: var(--border);
+      stroke-width: 3;
+      fill: none;
+      stroke-linecap: round;
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+    }
+    .branch-line.anim-draw {
+      animation: drawLine 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .branch-node {
+      fill: var(--panel);
+      stroke: var(--accent);
+      stroke-width: 2.5;
+    }
+    .branch-node.green { stroke: var(--green); }
+    .branch-node.blue { stroke: var(--blue); }
+    .branch-label {
+      font-family: var(--mono);
+      font-size: 13px;
+      fill: var(--muted);
+    }
+
+    .content {
+      position: absolute;
+      left: 120px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1000px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: rgba(184, 92, 56, 0.08);
+      border: 1px solid rgba(184, 92, 56, 0.2);
+      border-radius: 999px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 36px;
+      font-family: var(--sans);
+    }
+    .badge::before {
+      content: '';
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    h1 {
+      font-family: var(--serif);
+      font-size: 76px;
+      line-height: 1.08;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 28px;
+      color: var(--text);
+    }
+    h1 .accent { color: var(--accent); }
+    .subtitle {
+      font-size: 28px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 64px;
+      max-width: 760px;
+      font-family: var(--sans);
+    }
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      font-size: 17px;
+      color: var(--muted);
+      font-family: var(--sans);
+    }
+    .meta .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+    .meta strong { color: var(--text); font-weight: 600; }
+
+    .logo-strip {
+      position: absolute;
+      bottom: 64px;
+      left: 120px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .logo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      font-family: var(--mono);
+      box-shadow: 0 2px 8px rgba(44, 36, 27, 0.04);
+    }
+    .logo-item svg { width: 18px; height: 18px; }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="blob blob-1 anim-float"></div>
+  <div class="blob blob-2 anim-float"></div>
+
+  <!-- Branch visualization -->
+  <svg class="branch-viz anim-scale delay-3" viewBox="0 0 520 640">
+    <path class="branch-line anim-draw" d="M80 80 L80 200 Q80 260 140 260 L240 260" />
+    <path class="branch-line anim-draw" d="M80 80 L80 360 Q80 420 140 420 L240 420" />
+    <path class="branch-line anim-draw" d="M240 260 L360 260 Q420 260 420 320 L420 520" />
+    <path class="branch-line anim-draw" d="M240 420 L360 420 Q420 420 420 380 L420 200" />
+    <path class="branch-line anim-draw" d="M420 200 L480 200" />
+    <path class="branch-line anim-draw" d="M420 520 L480 520" />
+
+    <circle class="branch-node anim-scale delay-3" cx="80" cy="80" r="18" />
+    <text class="branch-label anim-fade-up delay-4" x="110" y="86">Idea</text>
+
+    <circle class="branch-node green anim-scale delay-4" cx="240" cy="260" r="14" />
+    <text class="branch-label anim-fade-up delay-5" x="270" y="266">Docs PR</text>
+
+    <circle class="branch-node blue anim-scale delay-4" cx="240" cy="420" r="14" />
+    <text class="branch-label anim-fade-up delay-5" x="270" y="426">Proto URL</text>
+
+    <circle class="branch-node anim-scale delay-5" cx="420" cy="200" r="16" />
+    <text class="branch-label anim-fade-up delay-6" x="450" y="206">Review</text>
+
+    <circle class="branch-node anim-scale delay-5" cx="420" cy="520" r="16" />
+    <text class="branch-label anim-fade-up delay-6" x="450" y="526">Deploy</text>
+
+    <circle class="branch-node green anim-scale delay-6" cx="480" cy="200" r="10" />
+    <circle class="branch-node blue anim-scale delay-6" cx="480" cy="520" r="10" />
+  </svg>
+
+  <div class="content">
+    <div class="badge anim-fade-left delay-1">AI 时代产研协作</div>
+    <h1 class="anim-fade-up delay-2">
+      基于 <span class="accent">GitHub</span><br />
+      打通 Idea → 文档 → 原型 URL
+    </h1>
+    <div class="subtitle anim-fade-up delay-3">
+      面向产品经理与研发小伙伴的内部分享：如何把 GitHub 从「代码仓库」升级为产研流程的中转站
+    </div>
+    <div class="meta anim-fade-up delay-4">
+      <span><strong>分享人</strong>：Kris</span>
+      <span class="dot"></span>
+      <span><strong>日期</strong>：2026.06.26</span>
+      <span class="dot"></span>
+      <span><strong>时长</strong>：30 min</span>
+    </div>
+  </div>
+
+  <div class="logo-strip anim-fade-up delay-5">
+    <div class="logo-item">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      GitHub
+    </div>
+    <div class="logo-item">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+      Hermes Agent
+    </div>
+  </div>
+</body>
+</html>

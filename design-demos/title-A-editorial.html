@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Title Demo A - Warm Editorial</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --accent-light: #D4805A;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: "JetBrains Mono", monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 100px 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .top-bar .line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      margin: 0 24px;
+    }
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 1100px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      background: rgba(184, 92, 56, 0.08);
+      border: 1px solid rgba(184, 92, 56, 0.2);
+      border-radius: 999px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 40px;
+      width: fit-content;
+    }
+    h1 {
+      font-family: var(--serif);
+      font-size: 92px;
+      line-height: 1.05;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 32px;
+    }
+    h1 .accent { color: var(--accent); font-style: italic; }
+    .subtitle {
+      font-size: 26px;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 720px;
+    }
+    .bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .meta {
+      display: flex;
+      gap: 36px;
+      font-size: 15px;
+      color: var(--muted);
+    }
+    .meta strong { color: var(--text); font-weight: 600; }
+    .deco {
+      position: absolute;
+      right: 100px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 320px;
+      height: 480px;
+      border: 1px solid var(--border);
+      border-radius: 160px;
+      background: linear-gradient(180deg, rgba(184,92,56,0.08) 0%, transparent 60%);
+    }
+    .deco::before {
+      content: '';
+      position: absolute;
+      inset: 40px;
+      border: 1px solid var(--border);
+      border-radius: 120px;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="top-bar">
+      <span>AI 时代产研协作</span>
+      <span class="line"></span>
+      <span>Internal Sharing</span>
+    </div>
+
+    <div class="deco"></div>
+
+    <div class="content">
+      <div class="badge">30 min 深度分享</div>
+      <h1>
+        基于 <span class="accent">GitHub</span><br />
+        打通 Idea → 文档 → 原型 URL
+      </h1>
+      <div class="subtitle">
+        面向产品经理与研发小伙伴的内部分享：如何把 GitHub 从「代码仓库」升级为产研流程的中转站
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="meta">
+        <span><strong>分享人</strong>：Kris</span>
+        <span><strong>日期</strong>：2026.06.26</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

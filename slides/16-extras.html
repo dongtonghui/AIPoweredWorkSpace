@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>15 其它协作工具</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --purple: #7C6FA5;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 48px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      flex: 1;
+      min-height: 0;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(44, 36, 27, 0.12);
+    }
+    .card-icon {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .card-title { font-size: 28px; font-weight: 700; }
+    .card-desc {
+      font-size: 17px;
+      color: var(--muted);
+      line-height: 1.65;
+      flex: 1;
+    }
+    .card-use {
+      padding: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .card-use strong { color: var(--text); }
+    .card-use .label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: var(--mono);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .bottom-tip {
+      margin-top: 40px;
+      padding: 22px 28px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      font-size: 18px;
+      color: var(--text);
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.04);
+    }
+    .bottom-tip span { color: var(--accent); }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">MORE TOOLS</div>
+      <h2 class="anim-fade-up delay-2">其它 GitHub 协作工具：<span class="weak">不止于代码和文档</span></h2>
+    </div>
+
+    <div class="cards">
+      <div class="card anim-fade-up delay-2">
+        <div class="card-icon anim-scale delay-3">🐛</div>
+        <div class="card-title">Issues</div>
+        <div class="card-desc">
+          把需求、bug、调研任务都变成可追踪的 ticket。每个 Issue 可以关联 PR、文档、原型链接。
+        </div>
+        <div class="card-use anim-fade-up delay-4">
+          <div class="label">适合场景</div>
+          <strong>任务分发、缺陷跟踪、技术调研、上线 checklist。</strong>
+        </div>
+      </div>
+
+      <div class="card anim-fade-up delay-3">
+        <div class="card-icon anim-scale delay-4">💬</div>
+        <div class="card-title">Discussions</div>
+        <div class="card-desc">
+          开放式论坛，适合做方案头脑风暴、Q&A、决策记录。不像 Issue 那样需要 close。
+        </div>
+        <div class="card-use anim-fade-up delay-5">
+          <div class="label">适合场景</div>
+          <strong>“首页推荐用协同过滤还是规则引擎？”这类需要充分讨论的决策。</strong>
+        </div>
+      </div>
+
+      <div class="card anim-fade-up delay-4">
+        <div class="card-icon anim-scale delay-5">📊</div>
+        <div class="card-title">Projects</div>
+        <div class="card-desc">
+          看板/表格视图管理迭代进度。把 Issues、PR、文档任务串成一条交付流水线。
+        </div>
+        <div class="card-use anim-fade-up delay-6">
+          <div class="label">适合场景</div>
+          <strong>迭代规划、跨职能协作、对外汇报进度。</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-tip anim-fade-up delay-5">
+      这些工具 + Markdown 文档 + HTML 原型，<span>构成一个轻量级但完整的产研协作 OS</span>。
+    </div>
+  </div>
+</body>
+</html>

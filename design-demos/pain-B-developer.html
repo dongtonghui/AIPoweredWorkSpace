@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pain Demo B - Cool Developer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #1A1D23;
+      --panel: #22262E;
+      --border: #30363D;
+      --text: #E6EDF3;
+      --muted: #8B949E;
+      --accent: #3B82F6;
+      --accent-2: #06B6D4;
+      --red: #F85149;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: "JetBrains Mono", monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(48,54,61,0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(48,54,61,0.3) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 48px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--red);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--mono);
+      font-size: 52px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 500; }
+
+    .cards {
+      display: flex;
+      gap: 28px;
+      flex: 1;
+      min-height: 0;
+    }
+    .card {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-status {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(248, 81, 73, 0.15);
+      color: var(--red);
+    }
+    .card-title { font-size: 22px; font-weight: 700; }
+    .card-desc {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.7;
+      flex: 1;
+    }
+    .card-term {
+      background: #0D1117;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .card-term .cmd { color: var(--text); }
+    .card-term .out { color: var(--red); }
+    .card-term .ok { color: var(--accent-2); }
+
+    .bottom-bar {
+      margin-top: 40px;
+      padding: 22px 28px;
+      background: rgba(248, 81, 73, 0.08);
+      border: 1px solid rgba(248, 81, 73, 0.25);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+    }
+    .bottom-bar .quote {
+      font-size: 18px;
+      color: var(--text);
+    }
+    .bottom-bar .quote span { color: var(--red); }
+    .bottom-bar .error {
+      padding: 8px 14px;
+      background: rgba(248, 81, 73, 0.15);
+      border-radius: 4px;
+      color: var(--red);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker">ERROR: PAIN_POINT_01</div>
+      <h2>
+        文档散落在 <span class="weak">钉钉 / 邮件 / 微信群</span>
+      </h2>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-status">LOST</span>
+          <span class="card-title">钉钉里丢链接</span>
+        </div>
+        <div class="card-desc">
+          群里@全员发文档链接，过几天就被消息淹没。新人入职想查历史需求，需要爬楼几十屏。
+        </div>
+        <div class="card-term">
+          <span class="cmd">$ find_group_history --keyword="PRD"</span><br />
+          <span class="out">Error: 247 messages matched, no authoritative version found.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-status">CONFLICT</span>
+          <span class="card-title">邮件里串版本</span>
+        </div>
+        <div class="card-desc">
+          评审意见散落在邮件回复链里，研发同学需要手动汇总。版本一变，前面的结论就失效。
+        </div>
+        <div class="card-term">
+          <span class="cmd">$ merge_decisions --source=email_threads</span><br />
+          <span class="out">Fatal: cannot resolve versions V3 vs V4_最终版.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-status">UNSYNCED</span>
+          <span class="card-title">微信群里拍脑袋</span>
+        </div>
+        <div class="card-desc">
+          关键决策只留在群聊上下文，没有沉淀。产品改方向了，但文档没更新。
+        </div>
+        <div class="card-term">
+          <span class="cmd">$ sync_doc --from=wechat</span><br />
+          <span class="out">Warning: doc state mismatch. Expected v5, got v2.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="quote">
+        结果：<span>找文档 10 分钟，确认版本 20 分钟，真正理解需求 5 分钟。</span>
+      </div>
+      <div class="error">exit code 1</div>
+    </div>
+  </div>
+</body>
+</html>

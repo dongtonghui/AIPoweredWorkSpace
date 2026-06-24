@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>05 痛点 2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --red: #B85C38;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 48px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--red);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    .main {
+      flex: 1;
+      display: flex;
+      gap: 48px;
+      min-height: 0;
+    }
+    .left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .right {
+      width: 720px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .point {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.04);
+    }
+    .point-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .point-title .num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(184, 92, 56, 0.1);
+      color: var(--red);
+      font-size: 14px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+    }
+    .point-desc {
+      font-size: 17px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .file-explorer {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .explorer-title {
+      font-size: 14px;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-bottom: 8px;
+    }
+    .file-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 15px;
+      border: 1px solid var(--border);
+    }
+    .file-row.stale { opacity: 0.55; }
+    .file-row.latest { background: rgba(184, 92, 56, 0.06); border-color: rgba(184, 92, 56, 0.25); }
+    .file-icon { font-size: 18px; }
+    .file-name { font-family: var(--mono); flex: 1; }
+    .file-meta { color: var(--muted); font-size: 13px; }
+    .file-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--mono);
+    }
+    .file-badge.conflict { background: rgba(184, 92, 56, 0.1); color: var(--red); }
+    .file-badge.current { background: rgba(74, 124, 89, 0.1); color: var(--green); }
+
+    .bottom-quote {
+      margin-top: 32px;
+      padding: 22px 28px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      font-size: 20px;
+      color: var(--text);
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.04);
+    }
+    .bottom-quote span { color: var(--red); }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">PAIN POINT 02</div>
+      <h2 class="anim-fade-up delay-2">变更不可追踪：<span class="weak">“昨天不是这么写的”</span></h2>
+    </div>
+
+    <div class="main">
+      <div class="left">
+        <div class="point anim-fade-up delay-2">
+          <div class="point-title"><span class="num">1</span>没有单一可信来源</div>
+          <div class="point-desc">
+            每个人的电脑里、钉钉群里、邮件附件里都有一个“最新版”。开会时才发现，大家看的不是同一个文件。
+          </div>
+        </div>
+        <div class="point anim-fade-up delay-3">
+          <div class="point-title"><span class="num">2</span>变更历史丢失</div>
+          <div class="point-desc">
+            文档改了 5 版，但没人知道第 3 版为什么删掉了那个功能。评审意见散落在聊天记录和邮件回复里。
+          </div>
+        </div>
+
+        <div class="point anim-fade-up delay-4">
+          <div class="point-title"><span class="num">3</span>责任归属模糊</div>
+          <div class="point-desc">
+            出了问题只能问“谁改的？”“什么时候改的？”。没有 commit、没有 reviewer、没有审批记录。
+          </div>
+        </div>
+      </div>
+
+      <div class="right anim-fade-right delay-3">
+        <div class="explorer-title">~/Projects/需求文档/</div>
+        <div class="file-explorer">
+          <div class="file-row stale anim-fade-up delay-4">
+            <span class="file-icon">📄</span>
+            <span class="file-name">用户增长需求.docx</span>
+            <span class="file-meta">3个月前</span>
+            <span class="file-badge conflict">过时</span>
+          </div>
+          <div class="file-row stale anim-fade-up delay-5">
+            <span class="file-icon">📄</span>
+            <span class="file-name">用户增长需求_最终版.docx</span>
+            <span class="file-meta">2个月前</span>
+            <span class="file-badge conflict">被覆盖</span>
+          </div>
+          <div class="file-row stale anim-fade-up delay-6">
+            <span class="file-icon">📄</span>
+            <span class="file-name">用户增长需求_最终版_V2.docx</span>
+            <span class="file-meta">1个月前</span>
+            <span class="file-badge conflict">有争议</span>
+          </div>
+          <div class="file-row stale anim-fade-up delay-7">
+            <span class="file-icon">📄</span>
+            <span class="file-name">用户增长需求_最终版_V2_修订.docx</span>
+            <span class="file-meta">2周前</span>
+            <span class="file-badge conflict">未同步</span>
+          </div>
+          <div class="file-row latest anim-fade-up delay-8">
+            <span class="file-icon">📄</span>
+            <span class="file-name">用户增长需求_最终版_V2_修订_真的最终版.docx</span>
+            <span class="file-meta">昨天</span>
+            <span class="file-badge current">当前？</span>
+          </div>
+        </div>
+
+        <div class="bottom-quote anim-fade-up delay-8">
+          研发的噩梦：<span>“你确定这是最新版？”“我不确定，但文件名里写了最终版。”</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

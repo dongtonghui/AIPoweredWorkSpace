@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>17 一页总结</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 56px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .takeaways {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      justify-content: center;
+    }
+    .takeaway {
+      display: flex;
+      align-items: flex-start;
+      gap: 28px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 34px 40px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .takeaway:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(44, 36, 27, 0.12);
+    }
+    .takeaway-num {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--accent);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .takeaway-content { flex: 1; }
+    .takeaway-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .takeaway-desc {
+      font-size: 18px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .bottom {
+      margin-top: 40px;
+      padding: 24px 32px;
+      background: rgba(184, 92, 56, 0.06);
+      border: 1px solid rgba(184, 92, 56, 0.2);
+      border-radius: 14px;
+      font-size: 20px;
+      color: var(--text);
+      font-weight: 600;
+      text-align: center;
+    }
+    .bottom span { color: var(--accent); }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">TAKEAWAYS</div>
+      <h2 class="anim-fade-up delay-2">一页总结</h2>
+    </div>
+
+    <div class="takeaways">
+      <div class="takeaway anim-fade-up delay-2">
+        <div class="takeaway-num anim-scale delay-3">01</div>
+        <div class="takeaway-content">
+          <div class="takeaway-title">把 GitHub 当成产研中台，不只是代码仓库</div>
+          <div class="takeaway-desc">
+            文档、原型、评审、部署都可以围绕 GitHub 进行，形成单一事实来源，减少信息孤岛。
+          </div>
+        </div>
+      </div>
+
+      <div class="takeaway anim-fade-up delay-3">
+        <div class="takeaway-num anim-scale delay-4">02</div>
+        <div class="takeaway-content">
+          <div class="takeaway-title">Markdown + PR 让文档协作变得可追溯、可评审</div>
+          <div class="takeaway-desc">
+            每次改动都有 diff、作者、 reviewer。告别“最终版_真的最终版.docx”的噩梦。
+          </div>
+        </div>
+      </div>
+
+      <div class="takeaway anim-fade-up delay-4">
+        <div class="takeaway-num anim-scale delay-5">03</div>
+        <div class="takeaway-content">
+          <div class="takeaway-title">AI Agent 把 Idea → 文档 → 原型 URL 的链路压缩到分钟级</div>
+          <div class="takeaway-desc">
+            Hermes Agent 负责生成草稿和原型，PM 和研发负责审校与决策，人机协作而不是人替代机。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom anim-fade-up delay-5">
+      下一步：<span>选一个小项目试点，用 GitHub 管理它的 PRD + HTML 原型，跑通一次完整 PR 流程。</span>
+    </div>
+  </div>
+</body>
+</html>

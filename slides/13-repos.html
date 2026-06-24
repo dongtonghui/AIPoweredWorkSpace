@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>13 本地与远程仓库</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --red: #B85C38;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 70px 100px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 32px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 50px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    .main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      min-height: 0;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow: auto;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .card-title { font-size: 22px; font-weight: 700; }
+    .card-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+    .card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .card-body strong { color: var(--text); }
+
+    .cmd-block {
+      background: #2C241B;
+      color: #F5F2EA;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .cmd-block .comment { color: #9A9590; }
+    .cmd-block .cmd { color: #F5F2EA; }
+    .cmd-block .arg { color: #D4E4D4; }
+    .cmd-block .out { color: #A8C5E2; }
+    .cmd-block .warn { color: #F5C6C6; }
+
+    .step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-content { flex: 1; }
+    .step-title { font-weight: 700; color: var(--text); margin-bottom: 4px; }
+
+    .env-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .env-box .key { color: var(--accent); }
+    .env-box .val { color: var(--blue); }
+
+    .nl-example {
+      background: rgba(74, 124, 89, 0.06);
+      border: 1px solid rgba(74, 124, 89, 0.2);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .nl-example strong { color: var(--green); }
+
+    .alert {
+      padding: 12px 16px;
+      background: rgba(184, 92, 56, 0.06);
+      border: 1px solid rgba(184, 92, 56, 0.2);
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .alert strong { color: var(--red); }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+
+    /* Hover effects */
+    .card {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(44, 36, 27, 0.12);
+    }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">LOCAL ↔ REMOTE IN DETAIL</div>
+      <h2 class="anim-fade-up delay-2">本地仓库初始化 & 远程同步配置</h2>
+    </div>
+
+    <div class="main">
+      <div class="card anim-fade-up delay-2">
+        <div class="card-header">
+          <div class="card-icon">💻</div>
+          <div>
+            <div class="card-title">第一步：初始化本地仓库</div>
+            <div class="card-sub">在本地创建项目目录并启用 Git 追踪</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="step anim-fade-up delay-3">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">创建项目目录</div>
+              每个产品/需求独立一个仓库，避免文件混乱。
+            </div>
+          </div>
+
+          <div class="cmd-block anim-fade-up delay-4">
+            <span class="comment"># 创建并进入项目目录</span><br />
+            <span class="cmd">mkdir</span> <span class="arg">acme-product-docs</span><br />
+            <span class="cmd">cd</span> <span class="arg">acme-product-docs</span>
+          </div>
+
+          <div class="step anim-fade-up delay-4">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">初始化 Git 仓库</div>
+              生成 `.git` 目录，开始版本追踪。
+            </div>
+          </div>
+
+          <div class="cmd-block anim-fade-up delay-5">
+            <span class="cmd">git init</span><br />
+            <span class="out">Initialized empty Git repository in .../.git/</span>
+          </div>
+
+          <div class="step anim-fade-up delay-5">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">配置用户名和邮箱</div>
+              让每一次 commit 都带有作者信息。
+            </div>
+          </div>
+
+          <div class="cmd-block anim-fade-up delay-6">
+            <span class="cmd">git config user.name</span> <span class="arg">"Kris"</span><br />
+            <span class="cmd">git config user.email</span> <span class="arg">"kris@acme.com"</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card anim-fade-up delay-3">
+        <div class="card-header">
+          <div class="card-icon">🔐</div>
+          <div>
+            <div class="card-title">第二步：配置远程同步凭证</div>
+            <div class="card-sub">让 Agent 能安全地推送代码到 GitHub</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="step anim-fade-up delay-4">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">在 GitHub 生成 Personal Access Token</div>
+              路径：GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)。勾选 <strong>repo</strong> 权限。
+            </div>
+          </div>
+
+          <div class="step anim-fade-up delay-5">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">把 Token 写入 Agent 的环境变量</div>
+              不要硬编码在代码里，也不要上传到仓库。
+            </div>
+          </div>
+
+          <div class="env-box anim-fade-up delay-6">
+            <span class="comment"># ~/.bashrc 或 ~/.zshrc 或 Agent 的 .env 文件</span><br />
+            <span class="key">export GITHUB_TOKEN</span>=<span class="val">"ghp_xxxxxxxxxxxxxxxxxxxx"</span><br />
+            <span class="key">export GITHUB_USER</span>=<span class="val">"kris"</span>
+          </div>
+
+          <div class="alert anim-fade-up delay-7">
+            <strong>安全提醒：</strong> Token 相当于密码，务必加入 `.gitignore`，且只给最小必要权限。
+          </div>
+
+          <div class="step anim-fade-up delay-6">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">关联远程仓库</div>
+              用 HTTPS + Token 的方式关联，Agent 无需交互式输入密码。
+            </div>
+          </div>
+
+          <div class="cmd-block anim-fade-up delay-7">
+            <span class="cmd">git remote add origin</span> <span class="arg">https://$GITHUB_USER:$GITHUB_TOKEN@github.com/acme-product/docs.git</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card anim-fade-up delay-4">
+        <div class="card-header">
+          <div class="card-icon">🚀</div>
+          <div>
+            <div class="card-title">第三步：用自然语言命令 Agent 同步</div>
+            <div class="card-sub">不用记 Git 命令，直接对 Agent 说话</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="nl-example anim-fade-up delay-5">
+            <strong>提交并推送当前改动：</strong><br />
+            “我已经改好了首页推荐模块的 PRD，请帮我提交到当前分支，commit message 写清楚改动点，然后 push 到远程。”
+          </div>
+
+          <div class="nl-example anim-fade-up delay-6">
+            <strong>创建并切换新分支：</strong><br />
+            “我要开始做一个新需求，叫 checkout-redesign，帮我创建一个分支，并把当前文档复制一份进去。”
+          </div>
+
+          <div class="nl-example anim-fade-up delay-7">
+            <strong>拉取最新代码：</strong><br />
+            “远程 main 分支可能有更新，先帮我 pull 下来，如果有冲突告诉我冲突在哪里。”
+          </div>
+
+          <div class="nl-example anim-fade-up delay-8">
+            <strong>发起 PR：</strong><br />
+            “这个分支的改动已经测试完了，帮我推送到 GitHub 并创建一个 Pull Request，标题写明这是首页推荐模块 PRD，@tech-lead 评审。”
+          </div>
+        </div>
+      </div>
+
+      <div class="card anim-fade-up delay-5">
+        <div class="card-header">
+          <div class="card-icon">⚙️</div>
+          <div>
+            <div class="card-title">Agent 背后的实际执行</div>
+            <div class="card-sub">自然语言会被翻译为具体 Git 操作</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="cmd-block anim-fade-up delay-6">
+            <span class="comment"># Agent 解析你的指令后自动执行</span><br />
+            <span class="cmd">git add .</span><br />
+            <span class="cmd">git commit -m</span> <span class="arg">"update: 首页推荐模块目标从月活改留存"</span><br />
+            <span class="cmd">git push origin</span> <span class="arg">feat/home-recommendation</span><br />
+            <span class="cmd">gh pr create</span> <span class="arg">--title "PRD: 首页推荐模块" --reviewer tech-lead</span>
+          </div>
+
+          <div class="step anim-fade-up delay-7">
+            <div class="step-num">✓</div>
+            <div class="step-content">
+              <div class="step-title">你只需确认，Agent 负责执行</div>
+              Agent 会先列出将要执行的命令，等你确认后再运行。遇到冲突或权限问题会停下来向你求助。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

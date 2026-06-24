@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>08 GitHub in AI Era</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 44px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    .main {
+      flex: 1;
+      display: flex;
+      gap: 48px;
+      min-height: 0;
+    }
+    .left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .right {
+      width: 720px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .point {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.04);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .point:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(44, 36, 27, 0.12);
+    }
+    .point-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .point-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .point-title { font-size: 20px; font-weight: 700; }
+    .point-desc { font-size: 15px; color: var(--muted); line-height: 1.65; }
+
+    .diagram {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .layer {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .layer:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(44, 36, 27, 0.12);
+    }
+    .layer.ai { background: rgba(74, 124, 89, 0.06); border-color: rgba(74, 124, 89, 0.2); }
+    .layer.human { background: rgba(74, 111, 165, 0.06); border-color: rgba(74, 111, 165, 0.2); }
+    .layer.github { background: rgba(184, 92, 56, 0.06); border-color: rgba(184, 92, 56, 0.2); }
+    .layer-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .layer-content { flex: 1; }
+    .layer-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .layer-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+    .bottom {
+      margin-top: 28px;
+      padding: 20px 28px;
+      background: rgba(184, 92, 56, 0.06);
+      border: 1px solid rgba(184, 92, 56, 0.2);
+      border-radius: 12px;
+      font-size: 17px;
+      color: var(--text);
+      font-weight: 600;
+      text-align: center;
+    }
+    .bottom span { color: var(--accent); }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">WHAT IS GITHUB IN AI ERA</div>
+      <h2 class="anim-fade-up delay-2">AI 时代的 GitHub：<span class="weak">不只是代码仓库，而是高效协同中枢</span></h2>
+    </div>
+
+    <div class="main">
+      <div class="left">
+        <div class="point anim-fade-up delay-2">
+          <div class="point-header">
+            <div class="point-icon">🧠</div>
+            <div class="point-title">从「人写代码」到「人机协作」</div>
+          </div>
+          <div class="point-desc">
+            AI Agent 可以读仓库、写文件、提 PR、部署页面。人的角色从「执行者」变成「决策者 + 审校者」。
+          </div>
+        </div>
+
+        <div class="point anim-fade-up delay-3">
+          <div class="point-header">
+            <div class="point-icon">🎯</div>
+            <div class="point-title">从「工具分散」到「单一事实来源」</div>
+          </div>
+          <div class="point-desc">
+            文档、原型、任务、讨论、部署全部围绕一个 GitHub 仓库展开，新人入职不用再翻 5 个平台。
+          </div>
+        </div>
+
+        <div class="point anim-fade-up delay-4">
+          <div class="point-header">
+            <div class="point-icon">⚡</div>
+            <div class="point-title">从「周级迭代」到「分钟级验证」</div>
+          </div>
+          <div class="point-desc">
+            一个 idea 从口头描述到可点击原型 URL，可以从几天压缩到几十分钟，快速验证、快速迭代。
+          </div>
+        </div>
+      </div>
+
+      <div class="right anim-fade-right delay-3">
+        <div class="diagram">
+          <div class="layer human anim-fade-up delay-4">
+            <div class="layer-icon">👤</div>
+            <div class="layer-content">
+              <div class="layer-title">人：提出想法、做出判断、最终审批</div>
+              <div class="layer-desc">PM 描述需求、研发把关可行性、团队共同评审。</div>
+            </div>
+          </div>
+
+          <div class="layer ai anim-fade-up delay-5">
+            <div class="layer-icon">🤖</div>
+            <div class="layer-content">
+              <div class="layer-title">AI Agent：生成草稿、补全细节、自动同步</div>
+              <div class="layer-desc">Hermes / Claude Code 把自然语言转成 Markdown、HTML、commit、PR。</div>
+            </div>
+          </div>
+
+          <div class="layer github anim-fade-up delay-6">
+            <div class="layer-icon">🐙</div>
+            <div class="layer-content">
+              <div class="layer-title">GitHub：承载一切产研资产的协同中枢</div>
+              <div class="layer-desc">代码、文档、原型、讨论、任务、部署链路全部沉淀在这里。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom anim-fade-up delay-7">
+          在 AI 时代，<span>GitHub 是连接人与 AI 的「协同中枢」</span>，让产研流程更快、更透明、更可追溯。
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

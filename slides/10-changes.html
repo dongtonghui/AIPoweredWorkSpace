@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>09 查看变更</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --red: #B85C38;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 40px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    .main {
+      flex: 1;
+      display: flex;
+      gap: 40px;
+      min-height: 0;
+    }
+    .tools {
+      width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .tool {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.04);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tool:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(44, 36, 27, 0.12);
+    }
+    .tool-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .tool-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .tool-title { font-size: 20px; font-weight: 700; }
+    .tool-desc { font-size: 15px; color: var(--muted); line-height: 1.6; }
+
+    .diff {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      display: flex;
+      flex-direction: column;
+    }
+    .diff-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .diff-file {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .diff-badge {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: var(--mono);
+    }
+    .diff-badge.add { background: rgba(74, 124, 89, 0.1); color: var(--green); }
+    .diff-badge.del { background: rgba(184, 92, 56, 0.1); color: var(--red); }
+    .diff-body {
+      flex: 1;
+      padding: 24px;
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.8;
+      overflow: auto;
+    }
+    .diff-line { display: flex; gap: 16px; padding: 3px 0; }
+    .diff-line.add { background: rgba(74, 124, 89, 0.08); }
+    .diff-line.del { background: rgba(184, 92, 56, 0.08); }
+    .diff-line .ln { color: var(--muted); width: 30px; text-align: right; }
+    .diff-line .mark { width: 16px; text-align: center; }
+    .diff-line.add .mark { color: var(--green); }
+    .diff-line.del .mark { color: var(--red); }
+    .diff-line .code { color: var(--text); }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    @keyframes slideInLeftGreen {
+      from { opacity: 0; transform: translateX(-20px); background: rgba(74, 124, 59, 0.15); }
+      to { opacity: 1; transform: translateX(0); background: rgba(74, 124, 89, 0.08); }
+    }
+    @keyframes slideInLeftRed {
+      from { opacity: 0; transform: translateX(-20px); background: rgba(184, 92, 56, 0.15); }
+      to { opacity: 1; transform: translateX(0); background: rgba(184, 92, 56, 0.08); }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+    .anim-diff-line {
+      opacity: 0;
+      animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-diff-add {
+      opacity: 0;
+      animation: slideInLeftGreen 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity, background;
+    }
+    .anim-diff-del {
+      opacity: 0;
+      animation: slideInLeftRed 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity, background;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">TRACK CHANGES</div>
+      <h2 class="anim-fade-up delay-2">查看变更：<span class="weak">Diff / Blame / Commit History / PR Review</span></h2>
+    </div>
+
+    <div class="main">
+      <div class="tools">
+        <div class="tool anim-fade-up delay-2">
+          <div class="tool-header">
+            <div class="tool-icon">➕</div>
+            <div class="tool-title">Diff 对比</div>
+          </div>
+          <div class="tool-desc"><strong>改了什么一目了然：</strong> 新增绿色、删除红色、修改高亮。再也不用对着两份 Word 找不同。</div>
+        </div>
+
+        <div class="tool anim-fade-up delay-3">
+          <div class="tool-header">
+            <div class="tool-icon">👤</div>
+            <div class="tool-title">Blame 追责</div>
+          </div>
+          <div class="tool-desc"><strong>每一行都知道是谁写的：</strong> 鼠标悬停显示作者、commit、时间，历史责任清清楚楚。</div>
+        </div>
+
+        <div class="tool anim-fade-up delay-4">
+          <div class="tool-header">
+            <div class="tool-icon">🔄</div>
+            <div class="tool-title">Commit History</div>
+          </div>
+          <div class="tool-desc"><strong>版本演进全记录：</strong> 从 idea 到定稿的每一步都有消息说明， rollback 到任意历史版本只需一条命令。</div>
+        </div>
+
+        <div class="tool anim-fade-up delay-5">
+          <div class="tool-header">
+            <div class="tool-icon">💬</div>
+            <div class="tool-title">PR Review</div>
+          </div>
+          <div class="tool-desc"><strong>逐行评论+审批：</strong> 评审意见挂在对应行上，讨论有上下文，resolve 后才能合并。</div>
+        </div>
+      </div>
+
+      <div class="diff anim-fade-right delay-3">
+        <div class="diff-header anim-fade-up delay-4">
+          <span class="diff-file">docs/prd/user-growth-v3.md</span>
+          <span class="diff-badge add">+12</span>
+          <span class="diff-badge del">−4</span>
+        </div>
+        <div class="diff-body">
+          <div class="diff-line anim-diff-line" style="animation-delay: 0.45s;"><span class="ln">1</span><span class="mark"> </span><span class="code"># 用户增长需求 V3</span></div>
+          <div class="diff-line anim-diff-line" style="animation-delay: 0.48s;"><span class="ln">2</span><span class="mark"> </span><span class="code"></span></div>
+          <div class="diff-line del anim-diff-del" style="animation-delay: 0.51s;"><span class="ln">3</span><span class="mark">−</span><span class="code">## 目标：提升月活 3%</span></div>
+          <div class="diff-line add anim-diff-add" style="animation-delay: 0.54s;"><span class="ln">3</span><span class="mark">+</span><span class="code">## 目标：提升次月留存 5%</span></div>
+          <div class="diff-line anim-diff-line" style="animation-delay: 0.57s;"><span class="ln">4</span><span class="mark"> </span><span class="code"></span></div>
+          <div class="diff-line anim-diff-line" style="animation-delay: 0.60s;"><span class="ln">5</span><span class="mark"> </span><span class="code">## 核心改动</span></div>
+          <div class="diff-line del anim-diff-del" style="animation-delay: 0.63s;"><span class="ln">6</span><span class="mark">−</span><span class="code">- 首页 banner 位推送通用优惠券</span></div>
+          <div class="diff-line add anim-diff-add" style="animation-delay: 0.66s;"><span class="ln">6</span><span class="mark">+</span><span class="code">- 首页新增「猜你喜欢」推荐模块</span></div>
+          <div class="diff-line add anim-diff-add" style="animation-delay: 0.69s;"><span class="ln">7</span><span class="mark">+</span><span class="code">- 推荐算法由规则引擎切换为协同过滤</span></div>
+          <div class="diff-line add anim-diff-add" style="animation-delay: 0.72s;"><span class="ln">8</span><span class="mark">+</span><span class="code">- 增加冷启动兜底策略</span></div>
+          <div class="diff-line anim-diff-line" style="animation-delay: 0.75s;"><span class="ln">9</span><span class="mark"> </span><span class="code"></span></div>
+          <div class="diff-line add anim-diff-add" style="animation-delay: 0.78s;"><span class="ln">10</span><span class="mark">+</span><span class="code">## 评审记录</span></div>
+          <div class="diff-line add anim-diff-add" style="animation-delay: 0.81s;"><span class="ln">11</span><span class="mark">+</span><span class="code">- @tech-lead：目标从月活改留存更合理，同意。</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

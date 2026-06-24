@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Title Demo C - Bold Swiss</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #FFFFFF;
+      --text: #1A1A1A;
+      --muted: #666666;
+      --accent: #E63946;
+      --accent-dark: #C1121F;
+      --sans: "Space Grotesk", Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      --body: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      overflow: hidden;
+      position: relative;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 0;
+      display: grid;
+      grid-template-columns: 1fr 520px;
+      position: relative;
+    }
+    .left {
+      padding: 100px 80px 100px 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .right {
+      background: var(--accent);
+      position: relative;
+      overflow: hidden;
+    }
+    .right::before {
+      content: '';
+      position: absolute;
+      inset: 60px;
+      border: 4px solid rgba(255,255,255,0.3);
+    }
+    .right::after {
+      content: '→';
+      position: absolute;
+      bottom: 80px;
+      right: 80px;
+      font-family: var(--sans);
+      font-size: 200px;
+      color: rgba(255,255,255,0.2);
+      font-weight: 700;
+    }
+    .right-text {
+      position: absolute;
+      top: 80px;
+      left: 60px;
+      right: 60px;
+      font-family: var(--sans);
+      font-size: 28px;
+      color: white;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo {
+      width: 48px; height: 48px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-family: var(--sans);
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .top-text {
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .kicker {
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-family: var(--sans);
+      font-size: 84px;
+      line-height: 0.98;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 32px;
+    }
+    h1 .small { font-size: 56px; display: block; margin-top: 16px; color: var(--muted); }
+    .subtitle {
+      font-size: 22px;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 560px;
+    }
+    .bottom {
+      display: flex;
+      gap: 48px;
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .bottom strong { color: var(--text); font-weight: 700; }
+    .bottom .item {
+      padding-top: 16px;
+      border-top: 3px solid var(--accent);
+      min-width: 140px;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="left">
+      <div class="top">
+        <div class="logo">G</div>
+        <div class="top-text">GitHub Collaboration</div>
+      </div>
+
+      <div class="content">
+        <div class="kicker">Internal Sharing · 30 min</div>
+        <h1>
+          基于 GitHub<br />
+          <span class="small">打通 Idea → 文档 → 原型 URL</span>
+        </h1>
+        <div class="subtitle">
+          面向产品经理与研发小伙伴，探讨 AI 时代如何以 GitHub 为中转站实现高效产研协作
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="item"><strong>分享人</strong><br />Kris</div>
+        <div class="item"><strong>日期</strong><br />2026.06.26</div>
+        <div class="item"><strong>受众</strong><br />PM + RD</div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="right-text">
+        AI 时代的高效协同中枢
+      </div>
+    </div>
+  </div>
+</body>
+</html>
