@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>电商会员体系 PRD</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: "JetBrains Mono", monospace;
+    }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.8;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 24px;
+    }
+    .header {
+      text-align: center;
+      padding: 60px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 60px;
+    }
+    .header h1 {
+      font-family: var(--serif);
+      font-size: 52px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .header p {
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 32px;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    h2 {
+      font-family: var(--serif);
+      font-size: 32px;
+      font-weight: 700;
+      margin: 48px 0 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+    h3 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 32px 0 14px;
+      color: var(--accent);
+    }
+    h4 {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 24px 0 10px;
+    }
+    p { margin-bottom: 16px; color: var(--text); }
+    ul, ol {
+      margin: 16px 0 24px 24px;
+    }
+    li { margin-bottom: 8px; }
+    strong { font-weight: 700; color: var(--text); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      background: var(--panel);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(44,36,27,0.04);
+    }
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: var(--bg);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    tr:last-child td { border-bottom: none; }
+
+    code {
+      background: rgba(184, 92, 56, 0.08);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--accent);
+    }
+    pre {
+      background: #2C241B;
+      color: #F5F2EA;
+      padding: 20px;
+      border-radius: 12px;
+      overflow-x: auto;
+      margin: 24px 0;
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    .meta-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 40px;
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+    .meta-item { flex: 1; min-width: 150px; }
+    .meta-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .meta-value { font-size: 16px; font-weight: 600; }
+
+    .cta {
+      margin-top: 60px;
+      padding: 32px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      text-align: center;
+    }
+    .cta h3 { margin-top: 0; }
+    .cta a {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 14px 32px;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="./demo/index.html" class="back-link">← 查看交互 Demo</a>
+
+    <div class="header">
+      <h1>电商会员体系 PRD</h1>
+      <p>面向 Acme Mall 的会员成长、权益与付费订阅体系设计</p>
+    </div>
+
+    <div class="meta-box">
+      <div class="meta-item">
+        <div class="meta-label">版本</div>
+        <div class="meta-value">v1.0</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">负责人</div>
+        <div class="meta-value">Kris</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">日期</div>
+        <div class="meta-value">2026.06.26</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">状态</div>
+        <div class="meta-value">评审中</div>
+      </div>
+    </div>
+
+    <h2>1. 项目背景与目标</h2>
+
+    <h3>1.1 背景</h3>
+    <p>当前平台用户复购率偏低，老用户粘性不足，缺乏一套完整的会员成长与权益体系来激励用户持续消费。通过搭建会员体系，我们希望：</p>
+    <ul>
+      <li>提升用户生命周期价值（LTV）</li>
+      <li>增加用户复购频次</li>
+      <li>建立用户分层运营能力</li>
+      <li>为后续精准营销提供数据基础</li>
+    </ul>
+
+    <h3>1.2 目标</h3>
+    <table>
+      <tr><th>指标</th><th>当前值</th><th>3个月目标</th><th>6个月目标</th></tr>
+      <tr><td>会员渗透率</td><td>15%</td><td>30%</td><td>45%</td></tr>
+      <tr><td>会员复购率</td><td>25%</td><td>35%</td><td>45%</td></tr>
+      <tr><td>会员客单价</td><td>¥180</td><td>¥220</td><td>¥260</td></tr>
+      <tr><td>付费会员转化率</td><td>2%</td><td>5%</td><td>8%</td></tr>
+    </table>
+
+    <h2>2. 会员等级体系</h2>
+
+    <h3>2.1 等级定义</h3>
+    <table>
+      <tr><th>等级</th><th>名称</th><th>成长值区间</th><th>会员占比目标</th></tr>
+      <tr><td>Lv.0</td><td>普通会员</td><td>0 - 999</td><td>40%</td></tr>
+      <tr><td>Lv.1</td><td>银卡会员</td><td>1,000 - 4,999</td><td>35%</td></tr>
+      <tr><td>Lv.2</td><td>金卡会员</td><td>5,000 - 19,999</td><td>20%</td></tr>
+      <tr><td>Lv.3</td><td>黑卡会员</td><td>≥ 20,000</td><td>5%</td></tr>
+    </table>
+
+    <h3>2.2 成长值获取规则</h3>
+    <table>
+      <tr><th>行为</th><th>成长值</th><th>每日上限</th><th>说明</th></tr>
+      <tr><td>注册完成</td><td>+50</td><td>一次性</td><td>完善个人信息后发放</td></tr>
+      <tr><td>消费 1 元</td><td>+1</td><td>无上限</td><td>实际支付金额，退款扣回</td></tr>
+      <tr><td>每日签到</td><td>+5</td><td>1次</td><td>连续签到第7天额外+20</td></tr>
+      <tr><td>订单评价</td><td>+10</td><td>3次</td><td>带图评价额外+5</td></tr>
+      <tr><td>分享商品</td><td>+5</td><td>2次</td><td>分享到微信/朋友圈</td></tr>
+      <tr><td>邀请好友注册</td><td>+30</td><td>5次</td><td>好友完成首单再+50</td></tr>
+      <tr><td>完善资料</td><td>+20</td><td>一次性</td><td>头像、生日、性别</td></tr>
+    </table>
+
+    <h3>2.3 等级有效期</h3>
+    <ul>
+      <li>成长值永久累计，等级按自然年评估</li>
+      <li>每年 1 月 1 日根据上年度成长值重新定级</li>
+      <li>若当前成长值不足原等级门槛，则降一级（最低普通会员）</li>
+    </ul>
+
+    <h2>3. 会员权益</h2>
+
+    <h3>3.1 等级权益对比</h3>
+    <table>
+      <tr><th>权益</th><th>普通会员</th><th>银卡</th><th>金卡</th><th>黑卡</th></tr>
+      <tr><td>全场包邮</td><td>×</td><td>满¥99</td><td>满¥59</td><td>无门槛</td></tr>
+      <tr><td>会员折扣</td><td>×</td><td>98折</td><td>95折</td><td>90折</td></tr>
+      <tr><td>生日礼券</td><td>×</td><td>¥20</td><td>¥50</td><td>¥100</td></tr>
+      <tr><td>专属客服</td><td>×</td><td>×</td><td>✓</td><td>✓</td></tr>
+      <tr><td>新品优先购</td><td>×</td><td>×</td><td>✓</td><td>✓</td></tr>
+      <tr><td>年度礼盒</td><td>×</td><td>×</td><td>×</td><td>✓</td></tr>
+      <tr><td>专属折扣日</td><td>×</td><td>×</td><td>×</td><td>每月1次</td></tr>
+    </table>
+
+    <h3>3.2 权益使用规则</h3>
+    <ul>
+      <li><strong>会员折扣</strong>：仅限标有"会员专享"的商品，与部分优惠券不可叠加</li>
+      <li><strong>生日礼券</strong>：生日前 3 天发放，有效期 30 天</li>
+      <li><strong>专属折扣日</strong>：黑卡会员每月可指定一天，享受额外 85 折</li>
+      <li><strong>年度礼盒</strong>：黑卡会员每年生日月可领取一份实物礼盒</li>
+    </ul>
+
+    <h2>4. 积分体系</h2>
+
+    <h3>4.1 积分获取</h3>
+    <table>
+      <tr><th>行为</th><th>积分</th><th>说明</th></tr>
+      <tr><td>消费 1 元</td><td>+1</td><td>实际支付金额</td></tr>
+      <tr><td>每日签到</td><td>+5</td><td>连续签到额外加成</td></tr>
+      <tr><td>订单评价</td><td>+10</td><td>带图评价+15</td></tr>
+      <tr><td>参与活动</td><td>不定</td><td>平台营销活动</td></tr>
+      <tr><td>开通付费会员</td><td>+500</td><td>一次性奖励</td></tr>
+    </table>
+
+    <h3>4.2 积分消耗</h3>
+    <table>
+      <tr><th>场景</th><th>积分</th><th>说明</th></tr>
+      <tr><td>积分商城兑换</td><td>不等</td><td>优惠券、实物、虚拟权益</td></tr>
+      <tr><td>订单抵扣</td><td>100积分=¥1</td><td>单笔最高抵扣订单金额 20%</td></tr>
+      <tr><td>抽奖</td><td>50/次</td><td>每日限 10 次</td></tr>
+    </table>
+
+    <h3>4.3 积分有效期</h3>
+    <ul>
+      <li>积分有效期为获取当年的自然年 + 1 年</li>
+      <li>例如 2026 年获得的积分，将于 2027 年 12 月 31 日 23:59 过期</li>
+      <li>过期前 30 天、7 天、1 天通过 Push / 短信提醒</li>
+    </ul>
+
+    <h2>5. 付费订阅会员</h2>
+
+    <h3>5.1 产品形态</h3>
+    <table>
+      <tr><th>类型</th><th>价格</th><th>有效期</th><th>核心权益</th></tr>
+      <tr><td>月卡</td><td>¥19.9/月</td><td>30天</td><td>全场无门槛包邮、每月¥20券包、双倍积分</td></tr>
+      <tr><td>季卡</td><td>¥49.9/季</td><td>90天</td><td>月卡全部权益 + 专享价商品</td></tr>
+      <tr><td>年卡</td><td>¥169/年</td><td>365天</td><td>季卡全部权益 + 生日月¥50券 + 年度礼盒</td></tr>
+    </table>
+
+    <h3>5.2 付费会员与等级会员关系</h3>
+    <ul>
+      <li>付费会员是叠加权益，不影响成长值等级</li>
+      <li>用户可同时是「金卡会员」和「付费年卡会员」</li>
+      <li>付费会员到期后，等级权益仍然保留</li>
+    </ul>
+
+    <h3>5.3 开通路径</h3>
+    <ol>
+      <li>会员中心首页 → 开通会员</li>
+      <li>购物车结算页 → 凑单提示开通更省</li>
+      <li>商品详情页 → 会员专享价提示</li>
+      <li>订单完成页 → 推荐开通返积分</li>
+    </ol>
+
+    <h2>6. 页面结构与信息架构</h2>
+
+    <h4>6.1 会员中心首页</h4>
+    <ul>
+      <li>顶部：用户头像、当前等级、成长值进度条</li>
+      <li>卡片区：当前积分、优惠券数量、可用权益数</li>
+      <li>入口区：等级详情、积分商城、权益列表、开通会员</li>
+      <li>推荐区：今日会员专享商品</li>
+    </ul>
+
+    <h4>6.2 等级详情页</h4>
+    <ul>
+      <li>当前等级展示</li>
+      <li>成长进度条与下一级差距</li>
+      <li>权益对比表格</li>
+      <li>成长值获取攻略</li>
+    </ul>
+
+    <h4>6.3 成长值明细页</h4>
+    <ul>
+      <li>时间线形式展示成长值收支</li>
+      <li>筛选：全部 / 收入 / 支出</li>
+    </ul>
+
+    <h4>6.4 积分商城页</h4>
+    <ul>
+      <li>商品分类：优惠券、实物、虚拟权益</li>
+      <li>积分余额展示</li>
+      <li>兑换确认弹窗</li>
+    </ul>
+
+    <h4>6.5 权益列表页</h4>
+    <ul>
+      <li>当前可用权益</li>
+      <li>已使用 / 已过期权益</li>
+      <li>权益使用说明</li>
+    </ul>
+
+    <h4>6.6 开通/升级会员页</h4>
+    <ul>
+      <li>月卡 / 季卡 / 年卡对比</li>
+      <li>价格与权益清单</li>
+      <li>支付按钮（模拟）</li>
+    </ul>
+
+    <h2>7. 核心流程</h2>
+
+    <h3>7.1 会员升级流程</h3>
+    <pre><code>用户消费/签到/评价 → 成长值增加 → 达到下一等级门槛 →
+系统触发升级通知 → 解锁新权益 → 用户查看等级详情</code></pre>
+
+    <h3>7.2 付费会员开通流程</h3>
+    <pre><code>用户进入开通页 → 选择月/季/年卡 → 点击开通 →
+模拟支付成功 → 发放权益 → 更新会员状态 → 跳转会员中心</code></pre>
+
+    <h3>7.3 积分兑换流程</h3>
+    <pre><code>用户进入积分商城 → 选择商品 → 确认兑换 →
+扣除积分 → 发放优惠券/实物订单 → 更新积分余额</code></pre>
+
+    <h2>8. 数据指标</h2>
+
+    <h3>8.1 核心指标</h3>
+    <ul>
+      <li><strong>会员渗透率</strong>：会员数 / 总注册用户数</li>
+      <li><strong>会员复购率</strong>：会员 30 天内再次购买比例</li>
+      <li><strong>会员客单价</strong>：会员订单平均金额</li>
+      <li><strong>付费会员转化率</strong>：付费会员数 / 会员总数</li>
+      <li><strong>会员 GMV 占比</strong>：会员贡献 GMV / 总 GMV</li>
+    </ul>
+
+    <h3>8.2 观测指标</h3>
+    <ul>
+      <li>各等级会员分布</li>
+      <li>成长值获取来源占比</li>
+      <li>积分兑换率</li>
+      <li>权益使用率</li>
+      <li>付费会员续费率</li>
+    </ul>
+
+    <h2>9. 版本规划</h2>
+
+    <h3>MVP（第 1 期，2 周）</h3>
+    <ul>
+      <li>会员等级体系上线</li>
+      <li>成长值获取与等级展示</li>
+      <li>基础权益（包邮、折扣）</li>
+      <li>会员中心首页 + 等级详情页</li>
+    </ul>
+
+    <h3>V1.1（第 2 期，3 周）</h3>
+    <ul>
+      <li>积分体系上线</li>
+      <li>积分商城</li>
+      <li>成长值明细</li>
+      <li>生日礼券自动发放</li>
+    </ul>
+
+    <h3>V1.2（第 3 期，4 周）</h3>
+    <ul>
+      <li>付费订阅会员</li>
+      <li>会员专享价商品</li>
+      <li>专属折扣日</li>
+      <li>数据看板</li>
+    </ul>
+
+    <h2>10. 风险与边界</h2>
+
+    <h3>10.1 风险</h3>
+    <ul>
+      <li><strong>权益成本</strong>：包邮、折扣会直接压缩毛利，需财务测算</li>
+      <li><strong>刷单风险</strong>：成长值和积分规则可能被羊毛党利用</li>
+      <li><strong>技术复杂度</strong>：积分过期、等级评估需要定时任务支持</li>
+    </ul>
+
+    <h3>10.2 边界</h3>
+    <ul>
+      <li>退款订单需扣回对应成长值和积分</li>
+      <li>优惠券不可与会员折扣无限叠加</li>
+      <li>付费会员权益不与等级折扣重复计算，取最高优惠</li>
+    </ul>
+
+    <div class="cta">
+      <h3>查看交互原型</h3>
+      <p>已根据本 PRD 制作可点击、带本地状态的移动端会员中心 Demo。</p>
+      <a href="./demo/index.html">打开 Demo</a>
+    </div>
+  </div>
+</body>
+</html>
