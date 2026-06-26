@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maygrove Light Controller</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        :root {
+            --cream: #FAF8F5;
+            --sage: #8FA68E;
+            --sage-dark: #6B8E6B;
+            --sage-light: #B8C9B8;
+            --charcoal: #2D3436;
+            --gray: #636E72;
+            --light-gray: #B2BEC3;
+            --danger: #E17055;
+            --danger-light: #FCEAE6;
+            --accent: #E8D5B7;
+            --sun: #F4D03F;
+            --moon: #A8C8EC;
+            --ambient: #D4A5A5;
+            --ambient-dark: #C08080;
+            --sleep: #7B9ED2;
+            --sleep-light: #C5D8F0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--cream);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            color: var(--charcoal);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .header .subtitle {
+            font-size: 12px;
+            color: var(--gray);
+            font-weight: 300;
+        }
+
+        /* Warning */
+        .warning-banner {
+            background: var(--danger-light);
+            border: 1.5px solid var(--danger);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--danger);
+            font-weight: 500;
+        }
+        .warning-banner.show { display: flex; }
+
+        /* Sleep Toggle */
+        .mode-toggle {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .mode-label { display: flex; align-items: center; gap: 10px; }
+        .mode-text { font-size: 14px; font-weight: 600; }
+        .mode-desc { font-size: 11px; color: var(--gray); }
+
+        .toggle-switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            background: var(--light-gray);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+        .toggle-switch.active { background: var(--sleep); }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 22px; height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        }
+        .toggle-switch.active::after { transform: translateX(24px); }
+
+        /* Ring Section */
+        .ring-section {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .ring-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .ring-title { font-size: 14px; font-weight: 600; }
+        .ring-legend {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-dot {
+            width: 10px; height: 10px;
+            border-radius: 3px;
+        }
+        .legend-dot.main { background: var(--sage); }
+        .legend-dot.ambient { background: var(--ambient); }
+        .legend-dot.sleep { background: var(--sleep); }
+
+        /* Ring */
+        .ring-wrapper {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+
+        .ring-svg {
+            width: 100%; height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .ring-track {
+            fill: none;
+            stroke: #F0EDE8;
+            stroke-width: 44;
+        }
+
+        .ring-segment {
+            fill: none;
+            stroke-width: 44;
+            stroke-linecap: butt;
+            transition: stroke-dasharray 0.15s ease;
+        }
+        .ring-segment.dragging { transition: none; }
+
+        .ring-segment.main-light { stroke: var(--sage); }
+        .ring-segment.ambient-light { stroke: var(--ambient); }
+        .ring-segment.sleep-light { stroke: var(--sleep); opacity: 0.7; }
+
+        /* Hour markers */
+        .hour-marker {
+            position: absolute;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--light-gray);
+            transform: translate(-50%, -50%);
+        }
+        .hour-marker.major {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        /* Center info */
+        .center-info {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+        }
+        .center-icon {
+            width: 28px; height: 28px;
+            margin: 0 auto 6px;
+        }
+        .center-duration {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--sage-dark);
+            line-height: 1;
+        }
+        .center-duration.danger { color: var(--danger); }
+        .center-label { font-size: 11px; color: var(--gray); margin-top: 3px; }
+        .center-sub { font-size: 12px; color: var(--gray); margin-top: 6px; font-weight: 500; }
+
+        /* Handles */
+        .handle {
+            position: absolute;
+            width: 22px; height: 22px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: grab;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+            transition: transform 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .handle:hover { transform: translate(-50%, -50%) scale(1.2); }
+        .handle.dragging {
+            cursor: grabbing;
+            transform: translate(-50%, -50%) scale(1.25);
+        }
+        .handle::after {
+            content: attr(data-label);
+            position: absolute;
+            top: -26px; left: 50%;
+            transform: translateX(-50%);
+            background: var(--charcoal);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .handle:hover::after, .handle.dragging::after { opacity: 1; }
+        .handle-inner { width: 10px; height: 10px; border-radius: 50%; }
+        .handle.main .handle-inner { background: var(--sage-dark); }
+        .handle.ambient .handle-inner { background: var(--ambient-dark); }
+        .handle.sleep .handle-inner { background: var(--sleep); }
+
+        /* Time indicator */
+        .time-indicator {
+            position: absolute;
+            width: 2px; height: 52px;
+            background: var(--sun);
+            top: 50%; left: 50%;
+            margin-top: -66px; margin-left: -1px;
+            border-radius: 1px;
+            transform-origin: bottom center;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .time-indicator::after {
+            content: '';
+            position: absolute;
+            top: -5px; left: -4px;
+            width: 10px; height: 10px;
+            background: var(--sun);
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(244,208,63,0.5);
+        }
+
+        /* Info Panel */
+        .info-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #F5F3F0;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: 13px; color: var(--gray); display: flex; align-items: center; gap: 8px; }
+        .info-value { font-size: 13px; font-weight: 600; color: var(--charcoal); }
+        .info-value.highlight { color: var(--sage-dark); }
+        .info-value.danger { color: var(--danger); }
+
+        /* Brightness */
+        .brightness-section {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+        .brightness-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .brightness-title { font-size: 13px; font-weight: 600; }
+        .brightness-val { font-size: 14px; font-weight: 700; }
+        .slider-wrap { margin-bottom: 12px; }
+        .slider-wrap:last-child { margin-bottom: 0; }
+        .slider-label {
+            font-size: 11px;
+            color: var(--gray);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        input[type="range"] {
+            width: 100%; height: 6px;
+            -webkit-appearance: none;
+            background: #F0EDE8;
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px; height: 20px;
+            background: white;
+            border: 2.5px solid var(--sage-dark);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        }
+        input[type="range"].ambient-slider::-webkit-slider-thumb { border-color: var(--ambient-dark); }
+        input[type="range"].sleep-slider::-webkit-slider-thumb { border-color: var(--sleep); }
+
+        /* Actions */
+        .actions { display: flex; gap: 10px; }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-align: center;
+        }
+        .btn-primary { background: var(--sage); color: white; }
+        .btn-primary:hover { background: var(--sage-dark); }
+        .btn-secondary { background: white; color: var(--charcoal); border: 1.5px solid #E8E4DF; }
+        .btn-secondary:hover { border-color: var(--sage); }
+
+        /* Overlap indicator */
+        .overlap-hint {
+            font-size: 11px;
+            color: var(--gray);
+            text-align: center;
+            margin-top: 8px;
+            padding: 6px;
+            background: #F8F8F6;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Light Schedule</h1>
+            <div class="subtitle">Drag handles to set your plant's light cycle</div>
+        </div>
+
+        <div class="warning-banner" id="warningBanner">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <span>Main light must be ON for more than 6 hours to keep plants alive</span>
+        </div>
+
+        <div class="mode-toggle">
+            <div class="mode-label">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--sleep)" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                </svg>
+                <div>
+                    <div class="mode-text">Sleep Mode</div>
+                    <div class="mode-desc">Main light off during sleep, ambient can stay on</div>
+                </div>
+            </div>
+            <div class="toggle-switch" id="sleepToggle"></div>
+        </div>
+
+        <div class="ring-section">
+            <div class="ring-header">
+                <div class="ring-title">24-Hour Ring</div>
+                <div class="ring-legend">
+                    <div class="legend-item"><div class="legend-dot main"></div><span>Main</span></div>
+                    <div class="legend-item"><div class="legend-dot ambient"></div><span>Ambient</span></div>
+                    <div class="legend-item"><div class="legend-dot sleep"></div><span>Sleep</span></div>
+                </div>
+            </div>
+
+            <div class="ring-wrapper" id="ringWrapper">
+                <svg class="ring-svg" viewBox="0 0 300 300">
+                    <circle class="ring-track" cx="150" cy="150" r="118"/>
+                    <circle class="ring-segment main-light" id="mainArc" cx="150" cy="150" r="118" stroke-dasharray="0 741" stroke-dashoffset="0"/>
+                    <circle class="ring-segment ambient-light" id="ambientArc" cx="150" cy="150" r="118" stroke-dasharray="0 741" stroke-dashoffset="0"/>
+                    <circle class="ring-segment sleep-light" id="sleepArc" cx="150" cy="150" r="118" stroke-dasharray="0 741" stroke-dashoffset="0" style="display:none;"/>
+                </svg>
+
+                <div id="hourMarkers"></div>
+                <div class="time-indicator" id="timeIndicator"></div>
+
+                <div class="center-info">
+                    <svg class="center-icon" viewBox="0 0 28 28" fill="none" id="centerIcon">
+                        <circle cx="14" cy="14" r="6" fill="var(--sage)"/>
+                        <path d="M14 3V1M14 27V25M3 14H1M27 14H25M7.34 7.34L5.93 5.93M22.07 22.07L20.66 20.66M7.34 20.66L5.93 22.07M22.07 5.93L20.66 7.34" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <div class="center-duration" id="mainDuration">12.0h</div>
+                    <div class="center-label">Main Light</div>
+                    <div class="center-sub" id="timeRange">6:00 → 18:00</div>
+                </div>
+
+                <div class="handle main" id="hMainStart" data-label="Main ON"><div class="handle-inner"></div></div>
+                <div class="handle main" id="hMainEnd" data-label="Main OFF"><div class="handle-inner"></div></div>
+                <div class="handle ambient" id="hAmbStart" data-label="Amb ON"><div class="handle-inner"></div></div>
+                <div class="handle ambient" id="hAmbEnd" data-label="Amb OFF"><div class="handle-inner"></div></div>
+                <div class="handle sleep" id="hSleepStart" data-label="Sleep" style="display:none;"><div class="handle-inner"></div></div>
+                <div class="handle sleep" id="hSleepEnd" data-label="Wake" style="display:none;"><div class="handle-inner"></div></div>
+            </div>
+
+            <div class="overlap-hint" id="overlapHint">
+                💡 Ambient can overlap with Sleep · Main never overlaps with Ambient
+            </div>
+        </div>
+
+        <div class="brightness-section">
+            <div class="brightness-header">
+                <span class="brightness-title">Brightness</span>
+            </div>
+            <div class="slider-wrap">
+                <div class="slider-label">
+                    <span>Main Light</span>
+                    <span class="brightness-val" id="mainBrightVal" style="color: var(--sage-dark);">80%</span>
+                </div>
+                <input type="range" id="mainBrightSlider" min="0" max="100" value="80">
+            </div>
+            <div class="slider-wrap">
+                <div class="slider-label">
+                    <span>Ambient Light</span>
+                    <span class="brightness-val" id="ambBrightVal" style="color: var(--ambient-dark);">40%</span>
+                </div>
+                <input type="range" class="ambient-slider" id="ambBrightSlider" min="0" max="100" value="40">
+            </div>
+            <div class="slider-wrap" id="sleepBrightWrap" style="display:none;">
+                <div class="slider-label">
+                    <span>Sleep Ambient</span>
+                    <span class="brightness-val" id="sleepBrightVal" style="color: var(--sleep);">20%</span>
+                </div>
+                <input type="range" class="sleep-slider" id="sleepBrightSlider" min="0" max="100" value="20">
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div class="info-row">
+                <div class="info-label">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="var(--sage)"><circle cx="8" cy="8" r="6"/></svg>
+                    Main Light
+                </div>
+                <div class="info-value highlight" id="infoMain">12.0h (6:00 → 18:00)</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="var(--ambient)"><circle cx="8" cy="8" r="6"/></svg>
+                    Ambient Light
+                </div>
+                <div class="info-value" id="infoAmbient">12.0h (18:00 → 6:00)</div>
+            </div>
+            <div class="info-row" id="infoSleepRow" style="display:none;">
+                <div class="info-label">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="var(--sleep)"><circle cx="8" cy="8" r="6"/></svg>
+                    Sleep Period
+                </div>
+                <div class="info-value" id="infoSleep">—</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--gray)" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+                    Total Coverage
+                </div>
+                <div class="info-value" id="infoTotal">24.0h</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--sage-dark)" stroke-width="1.5"><path d="M13 7h-1V5a4 4 0 00-8 0v2H3a1 1 0 00-1 1v6a1 1 0 001 1h10a1 1 0 001-1V8a1 1 0 00-1-1z"/></svg>
+                    Plant Safety
+                </div>
+                <div class="info-value" id="plantSafety" style="color: var(--sage-dark);">✓ Safe</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-secondary" id="btnReset">Reset</button>
+            <button class="btn btn-primary" id="btnApply">Apply</button>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const R = 118;
+        const C = 2 * Math.PI * R;
+        const CX = 150, CY = 150;
+
+        // State: 4 handles define 3 segments on the ring
+        // Going clockwise: mainStart → mainEnd → ambStart → ambEnd → (back to mainStart)
+        // sleepStart/sleepEnd define sleep period (can overlap with ambient)
+        let state = {
+            mainStart: 6,
+            mainEnd: 18,
+            ambStart: 18,
+            ambEnd: 6,
+            sleepStart: 22,
+            sleepEnd: 6,
+            mainBright: 80,
+            ambBright: 40,
+            sleepBright: 20,
+            sleepMode: false,
+            dragging: null,
+        };
+
+        const $ = id => document.getElementById(id);
+        const els = {
+            mainArc: $('mainArc'),
+            ambientArc: $('ambientArc'),
+            sleepArc: $('sleepArc'),
+            hMainStart: $('hMainStart'),
+            hMainEnd: $('hMainEnd'),
+            hAmbStart: $('hAmbStart'),
+            hAmbEnd: $('hAmbEnd'),
+            hSleepStart: $('hSleepStart'),
+            hSleepEnd: $('hSleepEnd'),
+            mainDuration: $('mainDuration'),
+            timeRange: $('timeRange'),
+            infoMain: $('infoMain'),
+            infoAmbient: $('infoAmbient'),
+            infoSleep: $('infoSleep'),
+            infoSleepRow: $('infoSleepRow'),
+            infoTotal: $('infoTotal'),
+            plantSafety: $('plantSafety'),
+            warningBanner: $('warningBanner'),
+            mainBrightSlider: $('mainBrightSlider'),
+            mainBrightVal: $('mainBrightVal'),
+            ambBrightSlider: $('ambBrightSlider'),
+            ambBrightVal: $('ambBrightVal'),
+            sleepBrightSlider: $('sleepBrightSlider'),
+            sleepBrightVal: $('sleepBrightVal'),
+            sleepBrightWrap: $('sleepBrightWrap'),
+            sleepToggle: $('sleepToggle'),
+            timeIndicator: $('timeIndicator'),
+            ringWrapper: $('ringWrapper'),
+            centerIcon: $('centerIcon'),
+            overlapHint: $('overlapHint'),
+        };
+
+        function initMarkers() {
+            const container = $('hourMarkers');
+            for (let i = 0; i < 24; i++) {
+                const ang = (i / 24) * 360 - 90;
+                const rad = ang * Math.PI / 180;
+                const isMajor = i % 3 === 0;
+                const d = isMajor ? 142 : 136;
+                const el = document.createElement('div');
+                el.className = `hour-marker ${isMajor ? 'major' : ''}`;
+                el.style.left = (CX + d * Math.cos(rad)) + 'px';
+                el.style.top = (CY + d * Math.sin(rad)) + 'px';
+                if (isMajor) {
+                    const h = i === 0 ? 12 : (i > 12 ? i - 12 : i);
+                    el.textContent = h;
+                }
+                container.appendChild(el);
+            }
+        }
+
+        function fmt(h) {
+            const hr = Math.floor(h);
+            const mn = Math.round((h - hr) * 60);
+            return `${hr.toString().padStart(2,'0')}:${mn.toString().padStart(2,'0')}`;
+        }
+
+        function dur(a, b) {
+            let d = b - a;
+            if (d < 0) d += 24;
+            return d;
+        }
+
+        function pos(h) {
+            const ang = (h / 24) * 360 - 90;
+            const rad = ang * Math.PI / 180;
+            return { x: CX + R * Math.cos(rad), y: CY + R * Math.sin(rad) };
+        }
+
+        function setArc(el, start, end) {
+            const d = dur(start, end);
+            const len = (d / 24) * C;
+            const offset = -(start / 24) * C;
+            el.style.strokeDasharray = `${len} ${C}`;
+            el.style.strokeDashoffset = offset;
+        }
+
+        function update() {
+            const mainDur = dur(state.mainStart, state.mainEnd);
+            const ambDur = dur(state.ambStart, state.ambEnd);
+            const sleepDur = dur(state.sleepStart, state.sleepEnd);
+
+            // Main arc
+            setArc(els.mainArc, state.mainStart, state.mainEnd);
+
+            // Ambient arc
+            setArc(els.ambientArc, state.ambStart, state.ambEnd);
+
+            // Sleep arc (shown when sleep mode on)
+            if (state.sleepMode) {
+                els.sleepArc.style.display = 'block';
+                els.hSleepStart.style.display = 'flex';
+                els.hSleepEnd.style.display = 'flex';
+                els.infoSleepRow.style.display = 'flex';
+                els.sleepBrightWrap.style.display = 'block';
+                setArc(els.sleepArc, state.sleepStart, state.sleepEnd);
+
+                // Sleep overlaps with ambient: show combined color in overlap region
+                // The sleep arc renders on top of ambient (higher z-index via SVG order)
+                els.overlapHint.textContent = '💤 Sleep period active · Main light will be OFF during sleep';
+            } else {
+                els.sleepArc.style.display = 'none';
+                els.hSleepStart.style.display = 'none';
+                els.hSleepEnd.style.display = 'none';
+                els.infoSleepRow.style.display = 'none';
+                els.sleepBrightWrap.style.display = 'none';
+                els.overlapHint.textContent = '💡 Ambient can overlap with Sleep · Main never overlaps with Ambient';
+            }
+
+            // Handles
+            const setHandle = (el, h) => {
+                const p = pos(h);
+                el.style.left = p.x + 'px';
+                el.style.top = p.y + 'px';
+                el.setAttribute('data-label', fmt(h));
+            };
+            setHandle(els.hMainStart, state.mainStart);
+            setHandle(els.hMainEnd, state.mainEnd);
+            setHandle(els.hAmbStart, state.ambStart);
+            setHandle(els.hAmbEnd, state.ambEnd);
+            if (state.sleepMode) {
+                setHandle(els.hSleepStart, state.sleepStart);
+                setHandle(els.hSleepEnd, state.sleepEnd);
+            }
+
+            // Center
+            els.mainDuration.textContent = mainDur.toFixed(1) + 'h';
+            els.mainDuration.className = 'center-duration' + (mainDur < 6 ? ' danger' : '');
+            els.timeRange.textContent = `${fmt(state.mainStart)} → ${fmt(state.mainEnd)}`;
+
+            // Info
+            els.infoMain.textContent = `${mainDur.toFixed(1)}h (${fmt(state.mainStart)} → ${fmt(state.mainEnd)})`;
+            els.infoAmbient.textContent = `${ambDur.toFixed(1)}h (${fmt(state.ambStart)} → ${fmt(state.ambEnd)})`;
+            if (state.sleepMode) {
+                els.infoSleep.textContent = `${sleepDur.toFixed(1)}h (${fmt(state.sleepStart)} → ${fmt(state.sleepEnd)})`;
+            }
+
+            // Total coverage = main + ambient (they don't overlap)
+            const totalCoverage = mainDur + ambDur;
+            els.infoTotal.textContent = `${totalCoverage.toFixed(1)}h`;
+
+            // Safety
+            if (mainDur < 6) {
+                els.plantSafety.innerHTML = '<span style="color:var(--danger)">✗ At Risk</span>';
+                els.warningBanner.classList.add('show');
+            } else {
+                els.plantSafety.innerHTML = '<span style="color:var(--sage-dark)">✓ Safe</span>';
+                els.warningBanner.classList.remove('show');
+            }
+
+            // Current time
+            const now = new Date();
+            const curH = now.getHours() + now.getMinutes()/60;
+            const ang = (curH / 24) * 360;
+            els.timeIndicator.style.transform = `translate(-50%, -50%) rotate(${ang}deg)`;
+        }
+
+        function getHour(e) {
+            const rect = els.ringWrapper.getBoundingClientRect();
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            const x = cx - rect.left - CX;
+            const y = cy - rect.top - CY;
+            let ang = Math.atan2(y, x) * 180 / Math.PI;
+            ang = ang + 90;
+            if (ang < 0) ang += 360;
+            let h = (ang / 360) * 24;
+            h = Math.round(h * 2) / 2;
+            if (h >= 24) h = 0;
+            return h;
+        }
+
+        // Enforce non-overlap between main and ambient
+        // Order: mainStart < mainEnd < ambStart < ambEnd (clockwise)
+        function enforceOrder(changed) {
+            // Ensure main and ambient don't overlap
+            // Main occupies [mainStart, mainEnd], ambient occupies [ambStart, ambEnd]
+            // They should be adjacent or separated, never overlapping
+
+            if (changed === 'mainStart' || changed === 'mainEnd') {
+                // If main expands, push ambient boundaries
+                if (dur(state.mainStart, state.mainEnd) + dur(state.ambStart, state.ambEnd) > 24) {
+                    // Need to shrink ambient
+                    if (changed === 'mainStart') {
+                        state.ambEnd = state.mainStart;
+                    } else {
+                        state.ambStart = state.mainEnd;
+                    }
+                }
+            } else if (changed === 'ambStart' || changed === 'ambEnd') {
+                if (dur(state.mainStart, state.mainEnd) + dur(state.ambStart, state.ambEnd) > 24) {
+                    if (changed === 'ambStart') {
+                        state.mainEnd = state.ambStart;
+                    } else {
+                        state.mainStart = state.ambEnd;
+                    }
+                }
+            }
+        }
+
+        function startDrag(key) {
+            return e => {
+                e.preventDefault();
+                state.dragging = key;
+                const elId = key === 'mainStart' ? 'hMainStart' :
+                             key === 'mainEnd' ? 'hMainEnd' :
+                             key === 'ambStart' ? 'hAmbStart' :
+                             key === 'ambEnd' ? 'hAmbEnd' :
+                             key === 'sleepStart' ? 'hSleepStart' : 'hSleepEnd';
+                $(elId).classList.add('dragging');
+            };
+        }
+
+        function onMove(e) {
+            if (!state.dragging) return;
+            e.preventDefault();
+            const h = getHour(e);
+            state[state.dragging] = h;
+            enforceOrder(state.dragging);
+            update();
+        }
+
+        function onEnd() {
+            if (!state.dragging) return;
+            const elId = state.dragging === 'mainStart' ? 'hMainStart' :
+                         state.dragging === 'mainEnd' ? 'hMainEnd' :
+                         state.dragging === 'ambStart' ? 'hAmbStart' :
+                         state.dragging === 'ambEnd' ? 'hAmbEnd' :
+                         state.dragging === 'sleepStart' ? 'hSleepStart' : 'hSleepEnd';
+            $(elId).classList.remove('dragging');
+            state.dragging = null;
+        }
+
+        // Events
+        els.hMainStart.addEventListener('mousedown', startDrag('mainStart'));
+        els.hMainStart.addEventListener('touchstart', startDrag('mainStart'), {passive:false});
+        els.hMainEnd.addEventListener('mousedown', startDrag('mainEnd'));
+        els.hMainEnd.addEventListener('touchstart', startDrag('mainEnd'), {passive:false});
+        els.hAmbStart.addEventListener('mousedown', startDrag('ambStart'));
+        els.hAmbStart.addEventListener('touchstart', startDrag('ambStart'), {passive:false});
+        els.hAmbEnd.addEventListener('mousedown', startDrag('ambEnd'));
+        els.hAmbEnd.addEventListener('touchstart', startDrag('ambEnd'), {passive:false});
+        els.hSleepStart.addEventListener('mousedown', startDrag('sleepStart'));
+        els.hSleepStart.addEventListener('touchstart', startDrag('sleepStart'), {passive:false});
+        els.hSleepEnd.addEventListener('mousedown', startDrag('sleepEnd'));
+        els.hSleepEnd.addEventListener('touchstart', startDrag('sleepEnd'), {passive:false});
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('touchmove', onMove, {passive:false});
+        document.addEventListener('mouseup', onEnd);
+        document.addEventListener('touchend', onEnd);
+
+        // Click ring
+        els.ringWrapper.addEventListener('click', e => {
+            if (e.target.closest('.handle')) return;
+            const h = getHour(e);
+            const handles = [
+                {key:'mainStart', val:state.mainStart},
+                {key:'mainEnd', val:state.mainEnd},
+                {key:'ambStart', val:state.ambStart},
+                {key:'ambEnd', val:state.ambEnd},
+            ];
+            if (state.sleepMode) {
+                handles.push({key:'sleepStart', val:state.sleepStart});
+                handles.push({key:'sleepEnd', val:state.sleepEnd});
+            }
+            let nearest = handles[0];
+            let minDist = 999;
+            handles.forEach(hd => {
+                let d = Math.abs(h - hd.val);
+                if (d > 12) d = 24 - d;
+                if (d < minDist) { minDist = d; nearest = hd; }
+            });
+            state[nearest.key] = h;
+            enforceOrder(nearest.key);
+            update();
+        });
+
+        // Brightness
+        els.mainBrightSlider.addEventListener('input', function() {
+            state.mainBright = parseInt(this.value);
+            els.mainBrightVal.textContent = state.mainBright + '%';
+        });
+        els.ambBrightSlider.addEventListener('input', function() {
+            state.ambBright = parseInt(this.value);
+            els.ambBrightVal.textContent = state.ambBright + '%';
+        });
+        els.sleepBrightSlider.addEventListener('input', function() {
+            state.sleepBright = parseInt(this.value);
+            els.sleepBrightVal.textContent = state.sleepBright + '%';
+        });
+
+        // Sleep toggle
+        els.sleepToggle.addEventListener('click', function() {
+            state.sleepMode = !state.sleepMode;
+            this.classList.toggle('active', state.sleepMode);
+            update();
+        });
+
+        // Reset
+        $('btnReset').addEventListener('click', () => {
+            state.mainStart = 6; state.mainEnd = 18;
+            state.ambStart = 18; state.ambEnd = 6;
+            state.sleepStart = 22; state.sleepEnd = 6;
+            state.mainBright = 80; state.ambBright = 40; state.sleepBright = 20;
+            state.sleepMode = false;
+            els.sleepToggle.classList.remove('active');
+            els.mainBrightSlider.value = 80; els.mainBrightVal.textContent = '80%';
+            els.ambBrightSlider.value = 40; els.ambBrightVal.textContent = '40%';
+            els.sleepBrightSlider.value = 20; els.sleepBrightVal.textContent = '20%';
+            update();
+        });
+
+        // Apply
+        $('btnApply').addEventListener('click', () => {
+            const mainDur = dur(state.mainStart, state.mainEnd);
+            const ambDur = dur(state.ambStart, state.ambEnd);
+            let msg = `☀️ Main: ${fmt(state.mainStart)} → ${fmt(state.mainEnd)} (${mainDur.toFixed(1)}h) @ ${state.mainBright}%\n`;
+            msg += `✨ Ambient: ${fmt(state.ambStart)} → ${fmt(state.ambEnd)} (${ambDur.toFixed(1)}h) @ ${state.ambBright}%\n`;
+            if (state.sleepMode) {
+                const sleepDur = dur(state.sleepStart, state.sleepEnd);
+                msg += `💤 Sleep: ${fmt(state.sleepStart)} → ${fmt(state.sleepEnd)} (${sleepDur.toFixed(1)}h) @ ${state.sleepBright}%\n`;
+                msg += `🌙 Main light OFF during sleep`;
+            }
+            alert(msg);
+        });
+
+        initMarkers();
+        update();
+        setInterval(update, 60000);
+    })();
+    </script>
+</body>
+</html>

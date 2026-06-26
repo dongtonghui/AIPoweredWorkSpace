@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acme Mall 会员中心</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --accent-light: #D4805A;
+      --gold: #C9A227;
+      --silver: #9CA3AF;
+      --black: #1A1A1A;
+      --green: #4A7C59;
+      --red: #B94A48;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: "JetBrains Mono", monospace;
+    }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+    }
+    #root { min-height: 100vh; }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .anim-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg);
+      position: relative;
+      padding-bottom: 80px;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+      color: white;
+      padding: 24px 20px;
+      border-radius: 0 0 24px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 160px;
+      height: 160px;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 50%;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    /* Member card */
+    .member-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: white;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      border: 3px solid rgba(255,255,255,0.4);
+    }
+    .member-info { flex: 1; }
+    .member-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .member-level {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .level-normal { background: #E8E4DC; color: var(--muted); }
+    .level-silver { background: #E5E7EB; color: #4B5563; }
+    .level-gold { background: #FEF3C7; color: #92400E; }
+    .level-black { background: var(--black); color: white; }
+
+    /* Progress */
+    .progress-section {
+      margin-top: 20px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 8px;
+      opacity: 0.9;
+    }
+    .progress-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: white;
+      border-radius: 999px;
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Content cards */
+    .content {
+      padding: 20px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(44,36,27,0.08);
+    }
+    .stat-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Menu grid */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .menu-item {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .menu-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(44,36,27,0.08);
+    }
+    .menu-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      margin: 0 auto 10px;
+    }
+    .menu-label {
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* Section */
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .section-more {
+      font-size: 13px;
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    /* Product horizontal scroll */
+    .product-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin: 0 -4px;
+    }
+    .product-card {
+      flex-shrink: 0;
+      width: 140px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .product-card:hover { transform: translateY(-3px); }
+    .product-img {
+      height: 100px;
+      background: linear-gradient(135deg, #E8D5C4 0%, #D4E4D4 100%);
+      display: grid;
+      place-items: center;
+      font-size: 40px;
+    }
+    .product-info { padding: 10px; }
+    .product-name {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .product-price {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .product-original {
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: line-through;
+      margin-left: 4px;
+    }
+
+    /* Level detail page */
+    .level-hero {
+      text-align: center;
+      padding: 30px 20px;
+      color: white;
+    }
+    .level-hero-icon {
+      font-size: 64px;
+      margin-bottom: 12px;
+    }
+    .level-hero-name {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .level-hero-desc {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .level-progress-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      margin: 0 20px 16px;
+    }
+    .benefit-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .benefit-row:last-child { border-bottom: none; }
+    .benefit-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+    .benefit-info { flex: 1; }
+    .benefit-name { font-size: 15px; font-weight: 600; }
+    .benefit-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .benefit-check { color: var(--green); font-size: 18px; }
+    .benefit-cross { color: var(--muted); font-size: 18px; }
+
+    /* Points mall */
+    .points-balance {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+      color: white;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .points-balance-label {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+    .points-balance-value {
+      font-size: 42px;
+      font-weight: 700;
+    }
+    .mall-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .mall-item {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .mall-item:hover { transform: translateY(-3px); }
+    .mall-icon { font-size: 40px; margin-bottom: 10px; }
+    .mall-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .mall-points {
+      font-size: 15px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Subscribe page */
+    .plan-card {
+      background: var(--panel);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .plan-card:hover { transform: translateY(-2px); }
+    .plan-card.selected {
+      border-color: var(--accent);
+      background: rgba(184, 92, 56, 0.04);
+    }
+    .plan-recommend {
+      position: absolute;
+      top: -10px;
+      right: 16px;
+      padding: 4px 12px;
+      background: var(--accent);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 999px;
+    }
+    .plan-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .plan-name { font-size: 20px; font-weight: 700; }
+    .plan-price { font-size: 24px; font-weight: 700; color: var(--accent); }
+    .plan-price span { font-size: 14px; color: var(--muted); font-weight: 500; }
+    .plan-features {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .plan-feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .pay-btn {
+      width: calc(100% - 40px);
+      margin: 20px;
+      padding: 16px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .pay-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(184,92,56,0.3);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(45, 36, 27, 0.95);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* History */
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+    .history-info { flex: 1; }
+    .history-title { font-size: 14px; font-weight: 600; }
+    .history-time { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .history-value {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .history-value.plus { color: var(--green); }
+    .history-value.minus { color: var(--red); }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 24px;
+      z-index: 100;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      padding: 4px 12px;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+    .nav-item.active { color: var(--accent); }
+    .nav-icon { font-size: 22px; }
+    .nav-label { font-size: 11px; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Level configuration
+    const LEVELS = [
+      { id: 0, name: '普通会员', min: 0, max: 999, color: 'level-normal', icon: '👤' },
+      { id: 1, name: '银卡会员', min: 1000, max: 4999, color: 'level-silver', icon: '🥈' },
+      { id: 2, name: '金卡会员', min: 5000, max: 19999, color: 'level-gold', icon: '🥇' },
+      { id: 3, name: '黑卡会员', min: 20000, max: Infinity, color: 'level-black', icon: '💎' }
+    ];
+
+    const BENEFITS = [
+      { name: '全场包邮', desc: '下单即享包邮服务', levels: [false, '满¥99', '满¥59', true] },
+      { name: '会员折扣', desc: '专享会员价商品', levels: [false, '98折', '95折', '90折'] },
+      { name: '生日礼券', desc: '生日当月专属优惠券', levels: [false, '¥20', '¥50', '¥100'] },
+      { name: '专属客服', desc: '7x24小时专属服务', levels: [false, false, true, true] },
+      { name: '新品优先购', desc: '热门新品提前购买', levels: [false, false, true, true] },
+      { name: '年度礼盒', desc: '每年生日月领取实物礼盒', levels: [false, false, false, true] }
+    ];
+
+    const MALL_ITEMS = [
+      { id: 1, name: '¥5 无门槛券', icon: '🎫', points: 500 },
+      { id: 2, name: '¥20 优惠券', icon: '🎟️', points: 1800 },
+      { id: 3, name: '运费券 x3', icon: '🚚', points: 300 },
+      { id: 4, name: '保温杯', icon: '🥤', points: 3500 },
+      { id: 5, name: '帆布包', icon: '👜', points: 4200 },
+      { id: 6, name: '会员周卡', icon: '⭐', points: 1500 }
+    ];
+
+    const PRODUCTS = [
+      { id: 1, name: '进口牛油果', icon: '🥑', price: 29.9, original: 39.9 },
+      { id: 2, name: '有机燕麦', icon: '🌾', price: 45.0, original: 58.0 },
+      { id: 3, name: '坚果礼盒', icon: '🥜', price: 89.0, original: 128.0 },
+      { id: 4, name: '蜂蜜柚子茶', icon: '🍯', price: 32.0, original: 42.0 }
+    ];
+
+    const PLANS = [
+      { id: 'month', name: '月卡', price: 19.9, period: '30天', recommend: false, features: ['全场无门槛包邮', '每月¥20券包', '消费双倍积分', '专属客服通道'] },
+      { id: 'quarter', name: '季卡', price: 49.9, period: '90天', recommend: false, features: ['月卡全部权益', '专享价商品', '退换货免运费', '积分兑换9折'] },
+      { id: 'year', name: '年卡', price: 169, period: '365天', recommend: true, features: ['季卡全部权益', '生日月¥50券', '年度实物礼盒', '黑卡专属折扣日'] }
+    ];
+
+    function App() {
+      const [page, setPage] = useState('home');
+      const [user, setUser] = useState({
+        name: 'Kris',
+        growth: 2850,
+        points: 1580,
+        coupons: 3,
+        isPaidMember: false,
+        paidType: null
+      });
+      const [history, setHistory] = useState([
+        { id: 1, title: '订单消费获得成长值', time: '2026-06-25', value: '+120', type: 'plus', icon: '🛒' },
+        { id: 2, title: '每日签到', time: '2026-06-25', value: '+5', type: 'plus', icon: '📅' },
+        { id: 3, title: '订单评价', time: '2026-06-24', value: '+10', type: 'plus', icon: '⭐' },
+        { id: 4, title: '兑换优惠券', time: '2026-06-23', value: '-500', type: 'minus', icon: '🎫' },
+        { id: 5, title: '消费获得积分', time: '2026-06-22', value: '+86', type: 'plus', icon: '🪙' }
+      ]);
+      const [toast, setToast] = useState('');
+
+      const showToast = (msg) => {
+        setToast(msg);
+        setTimeout(() => setToast(''), 2500);
+      };
+
+      const getLevel = () => {
+        for (let i = LEVELS.length - 1; i >= 0; i--) {
+          if (user.growth >= LEVELS[i].min) return LEVELS[i];
+        }
+        return LEVELS[0];
+      };
+
+      const currentLevel = getLevel();
+      const nextLevel = LEVELS.find(l => l.min > user.growth);
+      const progress = nextLevel ? ((user.growth - currentLevel.min) / (nextLevel.min - currentLevel.min)) * 100 : 100;
+
+      const handleCheckIn = () => {
+        setUser({ ...user, growth: user.growth + 5, points: user.points + 5 });
+        setHistory([{ id: Date.now(), title: '每日签到', time: new Date().toISOString().slice(0,10), value: '+5', type: 'plus', icon: '📅' }, ...history]);
+        showToast('签到成功！成长值 +5，积分 +5');
+      };
+
+      const handleRedeem = (item) => {
+        if (user.points >= item.points) {
+          setUser({ ...user, points: user.points - item.points });
+          setHistory([{ id: Date.now(), title: `兑换 ${item.name}`, time: new Date().toISOString().slice(0,10), value: `-${item.points}`, type: 'minus', icon: '🎁' }, ...history]);
+          showToast(`兑换成功：${item.name}`);
+        } else {
+          showToast('积分不足');
+        }
+      };
+
+      const handleSubscribe = (plan) => {
+        setUser({ ...user, isPaidMember: true, paidType: plan.name, points: user.points + 500 });
+        setHistory([{ id: Date.now(), title: `开通${plan.name}会员`, time: new Date().toISOString().slice(0,10), value: '+500', type: 'plus', icon: '👑' }, ...history]);
+        showToast(`开通成功！欢迎成为${plan.name}会员`);
+        setPage('home');
+      };
+
+      const renderHeader = (title, showBack = true) => (
+        <div className="header">
+          <div className="header-top">
+            {showBack ? (
+              <button className="back-btn" onClick={() => setPage('home')}←</button>
+            ) : <div />}
+            <div className="page-title">{title}</div>
+            <div className="header-actions">
+              <button className="icon-btn" onClick={() => setPage('home')}🏠</button>
+            </div>
+          </div>
+        </div>
+      );
+
+      const Home = () => (
+        <div className="anim-up">
+          <div className="header">
+            <div className="header-top">
+              <div className="page-title">Acme Mall 会员中心</div>
+              <div className="header-actions">
+                <button className="icon-btn">🔔</button>
+                <button className="icon-btn">⚙️</button>
+              </div>
+            </div>
+            <div className="member-card">
+              <div className="avatar">😊</div>
+              <div className="member-info">
+                <div className="member-name">{user.name}</div>
+                <span className={`member-level ${currentLevel.color}`}>
+                  {currentLevel.icon} {currentLevel.name}
+                </span>
+              </div>
+            </div>
+            <div className="progress-section">
+              <div className="progress-label">
+                <span>成长值 {user.growth.toLocaleString()}</span>
+                <span>{nextLevel ? `距${nextLevel.name}还差 ${(nextLevel.min - user.growth).toLocaleString()}` : '已达最高等级'}</span>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: `${Math.max(5, progress)}%` }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="content">
+            <div className="stats-grid">
+              <div className="stat-card" onClick={() => setPage('history')}>
+                <div className="stat-icon">🪙</div>
+                <div className="stat-value">{user.points}</div>
+                <div className="stat-label">积分</div>
+              </div>
+              <div className="stat-card" onClick={() => setPage('benefits')}>
+                <div className="stat-icon">🎁</div>
+                <div className="stat-value">{user.coupons}</div>
+                <div className="stat-label">优惠券</div>
+              </div>
+              <div className="stat-card" onClick={() => setPage('level')}>
+                <div className="stat-icon">📈</div>
+                <div className="stat-value">{currentLevel.name.slice(0,2)}</div>
+                <div className="stat-label">当前等级</div>
+              </div>
+            </div>
+
+            <div className="menu-grid">
+              <div className="menu-item" onClick={() => setPage('level')}>
+                <div className="menu-icon">🏅</div>
+                <div className="menu-label">等级详情</div>
+              </div>
+              <div className="menu-item" onClick={() => setPage('history')}>
+                <div className="menu-icon">📋</div>
+                <div className="menu-label">成长明细</div>
+              </div>
+              <div className="menu-item" onClick={() => setPage('mall')}>
+                <div className="menu-icon">🛍️</div>
+                <div className="menu-label">积分商城</div>
+              </div>
+              <div className="menu-item" onClick={() => setPage('benefits')}>
+                <div className="menu-icon">✨</div>
+                <div className="menu-label">我的权益</div>
+              </div>
+            </div>
+
+            {!user.isPaidMember ? (
+              <div className="section" onClick={() => setPage('subscribe')} style={{ cursor: 'pointer' }}>
+                <div className="section-header">
+                  <div className="section-title">开通付费会员</div>
+                  <div className="section-more">立即开通 →</div>
+                </div>
+                <div style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6 }}>
+                  全场包邮 · 双倍积分 · 会员专享价 · 年卡送年度礼盒
+                </div>
+              </div>
+            ) : (
+              <div className="section">
+                <div className="section-header">
+                  <div className="section-title">{user.paidType}会员已开通</div>
+                </div>
+                <div style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6 }}>
+                  正在享受付费会员全部权益，到期前会自动提醒续费
+                </div>
+              </div>
+            )}
+
+            <div className="section">
+              <div className="section-header">
+                <div className="section-title">会员专享</div>
+                <div className="section-more">更多</div>
+              </div>
+              <div className="product-scroll">
+                {PRODUCTS.map(p => (
+                  <div key={p.id} className="product-card">
+                    <div className="product-img">{p.icon}</div>
+                    <div className="product-info">
+                      <div className="product-name">{p.name}</div>
+                      <div>
+                        <span className="product-price">¥{p.price}</span>
+                        <span className="product-original">¥{p.original}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button className="pay-btn" onClick={handleCheckIn}>
+              每日签到 +5 成长值 +5 积分
+            </button>
+          </div>
+        </div>
+      );
+
+      const LevelPage = () => (
+        <div className="anim-up">
+          {renderHeader('等级详情')}
+          <div className="level-hero">
+            <div className="level-hero-icon">{currentLevel.icon}</div>
+            <div className="level-hero-name">{currentLevel.name}</div>
+            <div className="level-hero-desc">
+              {nextLevel ? `再获得 ${(nextLevel.min - user.growth).toLocaleString()} 成长值即可升级${nextLevel.name}` : '恭喜，您已解锁最高等级权益'}
+            </div>
+          </div>
+
+          <div className="level-progress-box">
+            <div className="progress-label" style={{ color: 'var(--text)' }}>
+              <span>成长值 {user.growth.toLocaleString()}</span>
+              <span>{nextLevel ? `${nextLevel.name} ${nextLevel.min.toLocaleString()}` : 'MAX'}</span>
+            </div>
+            <div className="progress-bar" style={{ background: 'var(--border)' }}>
+              <div className="progress-fill" style={{ width: `${Math.max(5, progress)}%`, background: 'var(--accent)' }} />
+            </div>
+          </div>
+
+          <div className="content">
+            <div className="section">
+              <div className="section-title" style={{ marginBottom: 12 }}>等级权益</div>
+              {BENEFITS.map((b, idx) => (
+                <div key={idx} className="benefit-row">
+                  <div className="benefit-icon">{idx % 2 === 0 ? '🎁' : '✨'}</div>
+                  <div className="benefit-info">
+                    <div className="benefit-name">{b.name}</div>
+                    <div className="benefit-desc">{b.desc}</div>
+                  </div>
+                  <div className={b.levels[currentLevel.id] ? 'benefit-check' : 'benefit-cross'}>
+                    {b.levels[currentLevel.id] ? '✓' : b.levels[currentLevel.id] === false ? '×' : b.levels[currentLevel.id]}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="section">
+              <div className="section-title" style={{ marginBottom: 12 }}>成长攻略</div>
+              {[
+                { icon: '🛒', title: '消费得成长值', desc: '每消费 1 元 +1 成长值' },
+                { icon: '📅', title: '每日签到', desc: '每日 +5，连续7天额外+20' },
+                { icon: '⭐', title: '订单评价', desc: '每次 +10，带图再+5' },
+                { icon: '👥', title: '邀请好友', desc: '好友注册 +30，首单再+50' }
+              ].map((item, idx) => (
+                <div key={idx} className="benefit-row">
+                  <div className="benefit-icon">{item.icon}</div>
+                  <div className="benefit-info">
+                    <div className="benefit-name">{item.title}</div>
+                    <div className="benefit-desc">{item.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+
+      const HistoryPage = () => (
+        <div className="anim-up">
+          {renderHeader('成长明细')}
+          <div className="content">
+            <div className="points-balance">
+              <div className="points-balance-label">当前成长值</div>
+              <div className="points-balance-value">{user.growth.toLocaleString()}</div>
+            </div>
+
+            <div className="section">
+              {history.map((h, idx) => (
+                <div key={h.id} className="history-item">
+                  <div className="history-icon">{h.icon}</div>
+                  <div className="history-info">
+                    <div className="history-title">{h.title}</div>
+                    <div className="history-time">{h.time}</div>
+                  </div>
+                  <div className={`history-value ${h.type}`}>
+                    {h.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+
+      const MallPage = () => (
+        <div className="anim-up">
+          {renderHeader('积分商城')}
+          <div className="content">
+            <div className="points-balance">
+              <div className="points-balance-label">可用积分</div>
+              <div className="points-balance-value">{user.points.toLocaleString()}</div>
+            </div>
+
+            <div className="mall-grid">
+              {MALL_ITEMS.map(item => (
+                <div key={item.id} className="mall-item" onClick={() => handleRedeem(item)}>
+                  <div className="mall-icon">{item.icon}</div>
+                  <div className="mall-name">{item.name}</div>
+                  <div className="mall-points">{item.points} 积分</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+
+      const BenefitsPage = () => (
+        <div className="anim-up">
+          {renderHeader('我的权益')}
+          <div className="content">
+            <div className="section">
+              <div className="section-title" style={{ marginBottom: 12 }}>当前可用</div>
+              {[
+                { icon: '🚚', name: '全场包邮券', desc: '银卡及以上可用', status: currentLevel.id >= 1 ? '可用' : '未解锁' },
+                { icon: '🎂', name: '生日礼券', desc: '生日当月发放', status: currentLevel.id >= 1 ? '待发放' : '未解锁' },
+                { icon: '🏷️', name: '会员折扣', desc: '专享价商品', status: currentLevel.id >= 1 ? '可用' : '未解锁' },
+                { icon: '👑', name: '专属客服', desc: '金卡及以上', status: currentLevel.id >= 2 ? '可用' : '未解锁' }
+              ].map((b, idx) => (
+                <div key={idx} className="benefit-row">
+                  <div className="benefit-icon">{b.icon}</div>
+                  <div className="benefit-info">
+                    <div className="benefit-name">{b.name}</div>
+                    <div className="benefit-desc">{b.desc}</div>
+                  </div>
+                  <div style={{ fontSize: 13, color: b.status === '可用' ? 'var(--green)' : 'var(--muted)', fontWeight: 600 }}>
+                    {b.status}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+
+      const SubscribePage = () => {
+        const [selected, setSelected] = useState('year');
+        const plan = PLANS.find(p => p.id === selected);
+        return (
+          <div className="anim-up">
+            {renderHeader('开通会员')}
+            <div className="content">
+              {PLANS.map(p => (
+                <div
+                  key={p.id}
+                  className={`plan-card ${selected === p.id ? 'selected' : ''}`}
+                  onClick={() => setSelected(p.id)}
+                >
+                  {p.recommend && <div className="plan-recommend">推荐</div>}
+                  <div className="plan-header">
+                    <div className="plan-name">{p.name}</div>
+                    <div className="plan-price">
+                      ¥{p.price}<span>/{p.period}</span>
+                    </div>
+                  </div>
+                  <div className="plan-features">
+                    {p.features.map((f, idx) => (
+                      <div key={idx} className="plan-feature">
+                        <span style={{ color: 'var(--green)' }}>✓</span>
+                        {f}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button className="pay-btn" onClick={() => handleSubscribe(plan)}>
+              立即支付 ¥{plan.price} 开通{plan.name}
+            </button>
+          </div>
+        );
+      };
+
+      return (
+        <div className="app">
+          {page === 'home' && <Home />}
+          {page === 'level' && <LevelPage />}
+          {page === 'history' && <HistoryPage />}
+          {page === 'mall' && <MallPage />}
+          {page === 'benefits' && <BenefitsPage />}
+          {page === 'subscribe' && <SubscribePage />}
+
+          <div className="bottom-nav">
+            {[
+              { id: 'home', icon: '🏠', label: '首页' },
+              { id: 'mall', icon: '🛍️', label: '积分商城' },
+              { id: 'benefits', icon: '🎁', label: '权益' },
+              { id: 'level', icon: '🏅', label: '等级' }
+            ].map(item => (
+              <div
+                key={item.id}
+                className={`nav-item ${page === item.id ? 'active' : ''}`}
+                onClick={() => setPage(item.id)}
+              >
+                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-label">{item.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className={`toast ${toast ? 'show' : ''}`}>{toast}</div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />
+    );
+  </script>
+</body>
+</html>
