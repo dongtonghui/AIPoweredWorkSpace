@@ -252,6 +252,18 @@
       transform: translateY(-8px) scale(1.02);
       box-shadow: 0 20px 40px rgba(44, 36, 27, 0.12);
     }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -344,5 +356,6 @@
       整个链路中，<span>Idea、文档、原型、评审记录、部署地址全部在同一个 GitHub 仓库里</span>，没有信息孤岛。
     </div>
   </div>
-</body>
+    <div class="page-footer"><span class="current">15</span> / 20 · Kris</div>
+  </body>
 </html>

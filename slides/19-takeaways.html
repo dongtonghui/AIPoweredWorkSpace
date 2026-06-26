@@ -184,6 +184,18 @@
     .delay-6 { animation-delay: 0.6s; }
     .delay-7 { animation-delay: 0.7s; }
     .delay-8 { animation-delay: 0.8s; }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -230,5 +242,6 @@
       下一步：<span>选一个小项目试点，用 GitHub 管理它的 PRD + HTML 原型，跑通一次完整 PR 流程。</span>
     </div>
   </div>
-</body>
+    <div class="page-footer"><span class="current">19</span> / 20 · Kris</div>
+  </body>
 </html>

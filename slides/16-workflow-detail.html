@@ -387,6 +387,18 @@
       flex-direction: column;
       height: 100%;
     }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -533,7 +545,7 @@
             <div class="output-label">Output</div>
             <div class="output-content">
               <span class="output-tag green">demo.html</span>
-              可交互的高保真原型文件
+              <a href="https://dongtonghui.github.io/AIPoweredWorkSpace/ring-light/" target="_blank" style="color: var(--green); text-decoration: underline; cursor: pointer; pointer-events: auto;">https://dongtonghui.github.io/AIPoweredWorkSpace/ring-light/</a>
             </div>
           </div>
         </div>
@@ -632,5 +644,6 @@
       });
     });
   </script>
-</body>
+    <div class="page-footer"><span class="current">16</span> / 20 · Kris</div>
+  </body>
 </html>

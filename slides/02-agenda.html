@@ -186,6 +186,18 @@
     .delay-6 { animation-delay: 0.6s; }
     .delay-7 { animation-delay: 0.7s; }
     .delay-8 { animation-delay: 0.8s; }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -250,5 +262,6 @@
       </div>
     </div>
   </div>
-</body>
+    <div class="page-footer"><span class="current">02</span> / 20 · Kris</div>
+  </body>
 </html>

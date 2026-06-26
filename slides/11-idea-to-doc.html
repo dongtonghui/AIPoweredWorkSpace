@@ -209,6 +209,18 @@
       transform: translateY(-8px) scale(1.02);
       box-shadow: 0 20px 40px rgba(44, 36, 27, 0.12);
     }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -287,5 +299,6 @@
       <strong>关键提示：</strong> AI 生成的是“70 分草稿”，不是终稿。PM 必须审校业务假设、补充上下文，再通过 PR 让团队共同打磨到 90 分。
     </div>
   </div>
-</body>
+    <div class="page-footer"><span class="current">11</span> / 20 · Kris</div>
+  </body>
 </html>
