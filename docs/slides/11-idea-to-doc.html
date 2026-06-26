@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>10 Idea to Doc</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 44px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    .flow {
+      flex: 1;
+      display: flex;
+      align-items: stretch;
+      gap: 32px;
+      min-height: 0;
+    }
+    .step {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+    .step-num {
+      position: absolute;
+      top: 20px; right: 24px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .step-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .step-title { font-size: 24px; font-weight: 700; }
+    .step-desc { font-size: 16px; color: var(--muted); line-height: 1.65; flex: 1; }
+    .step-mock {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 13px;
+      font-family: var(--mono);
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    .tips {
+      margin-top: 36px;
+      padding: 22px 28px;
+      background: rgba(74, 111, 165, 0.06);
+      border: 1px solid rgba(74, 111, 165, 0.2);
+      border-radius: 14px;
+      font-size: 18px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .tips strong { color: var(--blue); }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+
+    /* Hover effects */
+    .step {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .step:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(44, 36, 27, 0.12);
+    }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">IDEA → DOCUMENT</div>
+      <h2 class="anim-fade-up delay-2">用 Hermes Agent 把一句话需求变成 PRD</h2>
+    </div>
+
+    <div class="flow">
+      <div class="step anim-fade-up delay-2">
+        <div class="step-num anim-scale delay-3">01</div>
+        <div class="step-icon">💬</div>
+        <div class="step-title">自然语言描述</div>
+        <div class="step-desc">
+          PM 用日常语言描述需求，不需要先写模板。AI 负责把模糊想法结构化。
+        </div>
+        <div class="step-mock anim-fade-up delay-4">
+          “我想在首页加一个推荐模块，根据用户历史行为推荐商品，提升转化率。”
+        </div>
+      </div>
+
+      <div class="arrow anim-fade-up delay-3">→</div>
+
+      <div class="step anim-fade-up delay-3">
+        <div class="step-num anim-scale delay-4">02</div>
+        <div class="step-icon">🤖</div>
+        <div class="step-title">Hermes Agent 生成草稿</div>
+        <div class="step-desc">
+          Agent 自动补全目标、用户故事、功能范围、验收标准、风险提示，输出 Markdown。
+        </div>
+        <div class="step-mock anim-fade-up delay-5">
+          docs/prd/home-recommendation.md<br />
+          ├── 目标与指标<br />
+          ├── 用户故事<br />
+          ├── 功能范围<br />
+          └── 验收标准
+        </div>
+      </div>
+
+      <div class="arrow anim-fade-up delay-4">→</div>
+
+      <div class="step anim-fade-up delay-4">
+        <div class="step-num anim-scale delay-5">03</div>
+        <div class="step-icon">✏️</div>
+        <div class="step-title">PM 审校 + 提交 PR</div>
+        <div class="step-desc">
+          PM 在 Markdown 里修改关键假设，然后提交 Pull Request，@ 研发负责人评审。
+        </div>
+        <div class="step-mock anim-fade-up delay-6">
+          git checkout -b feat/home-rec-prd<br />
+          git add docs/prd/home-recommendation.md<br />
+          git commit -m "add: 首页推荐模块 PRD"
+        </div>
+      </div>
+
+      <div class="arrow anim-fade-up delay-5">→</div>
+
+      <div class="step anim-fade-up delay-5">
+        <div class="step-num anim-scale delay-6">04</div>
+        <div class="step-icon">✅</div>
+        <div class="step-title">评审通过即定稿</div>
+        <div class="step-desc">
+          研发在 PR 里提问、PM 回复，全部讨论沉淀在文档行级评论上。merge 后即为团队共识。
+        </div>
+        <div class="step-mock anim-fade-up delay-7">
+          ✅ Approved by @tech-lead<br />
+          ✅ Merged into main<br />
+          📌 单源真相已建立
+        </div>
+      </div>
+    </div>
+
+    <div class="tips anim-fade-up delay-6">
+      <strong>关键提示：</strong> AI 生成的是“70 分草稿”，不是终稿。PM 必须审校业务假设、补充上下文，再通过 PR 让团队共同打磨到 90 分。
+    </div>
+  </div>
+    <div class="page-footer"><span class="current">11</span> / 20 · Kris</div>
+  </body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>07 GitHub 作为产研中台</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 40px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    .hub {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 0;
+    }
+    .center {
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: var(--panel);
+      border: 2px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 12px 48px rgba(44, 36, 27, 0.1);
+      z-index: 2;
+    }
+    .center svg { width: 64px; height: 64px; }
+    .center-title { font-size: 24px; font-weight: 800; }
+    .center-sub { font-size: 14px; color: var(--muted); }
+
+    .satellite {
+      position: absolute;
+      width: 260px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .satellite .icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+    }
+    .satellite .title { font-size: 18px; font-weight: 700; }
+    .satellite .desc { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+    .sat-1 { top: 0; left: 50%; transform: translateX(-50%); }
+    .sat-2 { top: 120px; right: 80px; }
+    .sat-3 { bottom: 120px; right: 80px; }
+    .sat-4 { bottom: 0; left: 50%; transform: translateX(-50%); }
+    .sat-5 { bottom: 120px; left: 80px; }
+    .sat-6 { top: 120px; left: 80px; }
+
+    .line {
+      position: absolute;
+      background: var(--border);
+      z-index: 1;
+    }
+    .line-h { height: 2px; width: 140px; }
+    .line-v { width: 2px; height: 100px; }
+    .line-1 { top: 150px; left: 50%; transform: translateX(-50%); }
+    .line-2 { top: 220px; right: 220px; transform: rotate(60deg); transform-origin: right center; width: 120px; }
+    .line-3 { bottom: 220px; right: 220px; transform: rotate(-60deg); transform-origin: right center; width: 120px; }
+    .line-4 { bottom: 150px; left: 50%; transform: translateX(-50%); }
+    .line-5 { bottom: 220px; left: 220px; transform: rotate(60deg); transform-origin: left center; width: 120px; }
+    .line-6 { top: 220px; left: 220px; transform: rotate(-60deg); transform-origin: left center; width: 120px; }
+
+    .bottom {
+      margin-top: 32px;
+      padding: 22px 32px;
+      background: rgba(74, 124, 89, 0.06);
+      border: 1px solid rgba(74, 124, 89, 0.2);
+      border-radius: 14px;
+      font-size: 20px;
+      color: var(--text);
+      font-weight: 600;
+      text-align: center;
+    }
+    .bottom span { color: var(--green); }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    @keyframes scaleLineX {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+    @keyframes scaleLineY {
+      from { transform: scaleY(0); }
+      to { transform: scaleY(1); }
+    }
+    @keyframes scaleLineRotate1 {
+      from { transform: rotate(60deg) scaleX(0); }
+      to { transform: rotate(60deg) scaleX(1); }
+    }
+    @keyframes scaleLineRotate2 {
+      from { transform: rotate(-60deg) scaleX(0); }
+      to { transform: rotate(-60deg) scaleX(1); }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+    .anim-line-h {
+      opacity: 0;
+      animation: scaleLineX 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform-origin: center;
+      will-change: transform, opacity;
+    }
+    .anim-line-v {
+      opacity: 0;
+      animation: scaleLineY 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform-origin: center;
+      will-change: transform, opacity;
+    }
+    .anim-line-rot1 {
+      opacity: 0;
+      animation: scaleLineRotate1 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform-origin: right center;
+      will-change: transform, opacity;
+    }
+    .anim-line-rot2 {
+      opacity: 0;
+      animation: scaleLineRotate2 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform-origin: right center;
+      will-change: transform, opacity;
+    }
+    .anim-line-rot3 {
+      opacity: 0;
+      animation: scaleLineRotate1 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform-origin: left center;
+      will-change: transform, opacity;
+    }
+    .anim-line-rot4 {
+      opacity: 0;
+      animation: scaleLineRotate2 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform-origin: left center;
+      will-change: transform, opacity;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+
+    /* Satellite floating after entrance */
+    .sat-float {
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards, float 6s ease-in-out 1.5s infinite;
+      will-change: transform, opacity;
+    }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">TURNING POINT</div>
+      <h2 class="anim-fade-up delay-2">转机：把 GitHub 当作<span class="weak">产研流程的中转站</span></h2>
+    </div>
+
+    <div class="hub">
+      <div class="line line-h line-1 anim-line-h delay-3"></div>
+      <div class="line line-2 anim-line-rot1 delay-4"></div>
+      <div class="line line-3 anim-line-rot2 delay-5"></div>
+      <div class="line line-h line-4 anim-line-h delay-4"></div>
+      <div class="line line-5 anim-line-rot3 delay-5"></div>
+      <div class="line line-6 anim-line-rot4 delay-6"></div>
+
+      <div class="satellite sat-1 sat-float delay-3">
+        <div class="icon">📝</div>
+        <div class="title">产品文档</div>
+        <div class="desc">Markdown PRD、需求说明、设计决策，全部进仓库</div>
+      </div>
+
+      <div class="satellite sat-2 sat-float delay-4">
+        <div class="icon">🎨</div>
+        <div class="title">HTML 原型</div>
+        <div class="desc">可点击的演示页面直接作为仓库文件，一键部署 URL</div>
+      </div>
+
+      <div class="satellite sat-3 sat-float delay-5">
+        <div class="icon">🔍</div>
+        <div class="title">变更追踪</div>
+        <div class="desc">每条修改都有 commit、作者、时间、评审记录</div>
+      </div>
+
+      <div class="satellite sat-4 sat-float delay-6">
+        <div class="icon">🚀</div>
+        <div class="title">自动部署</div>
+        <div class="desc">Push 到分支即触发预览链接，merge 后自动上线</div>
+      </div>
+
+      <div class="satellite sat-5 sat-float delay-7">
+        <div class="icon">💬</div>
+        <div class="title">评审讨论</div>
+        <div class="desc">PR Review、Issues、Discussions 集中讨论，不丢上下文</div>
+      </div>
+
+      <div class="satellite sat-6 sat-float delay-8">
+        <div class="icon">🤖</div>
+        <div class="title">AI 加持</div>
+        <div class="desc">Hermes Agent 把自然语言需求转成文档和原型</div>
+      </div>
+
+      <div class="center anim-scale delay-2">
+        <svg viewBox="0 0 24 24" fill="#2C241B"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+        <div class="center-title">GitHub</div>
+        <div class="center-sub">产研中台</div>
+      </div>
+    </div>
+
+    <div class="bottom anim-fade-up delay-8">
+      核心思路：<span>不再把 GitHub 只当“代码仓库”，而是 Idea、文档、原型、评审、部署的单一事实来源。</span>
+    </div>
+  </div>
+    <div class="page-footer"><span class="current">07</span> / 20 · Kris</div>
+  </body>
+</html>

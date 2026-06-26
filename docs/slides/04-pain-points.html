@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>04 痛点 1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --red: #B85C38;
+      --orange: #D97706;
+      --cream-dark: #F2EEE6;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      margin-bottom: 48px;
+    }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--red);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--text);
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    .cards {
+      display: flex;
+      gap: 32px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .card {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    }
+    .card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(44,36,27,0.12);
+    }
+    .card-header {
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .card-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      background: rgba(184, 92, 56, 0.08);
+      flex-shrink: 0;
+    }
+    .card-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .card-sub {
+      font-size: 15px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .card-body {
+      flex: 1;
+      padding: 24px;
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+    /* Mockup UI inside cards */
+    .dingtalk-mock {
+      background: #FFFFFF;
+      border-radius: 14px;
+      padding: 16px;
+      color: #1F2329;
+      font-size: 13px;
+      margin-top: 16px;
+      border: 1px solid #EBEDF0;
+      box-shadow: 0 2px 8px rgba(31, 35, 41, 0.04);
+    }
+    .dingtalk-mock .msg {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .dingtalk-mock .msg:last-child { margin-bottom: 0; }
+    .dingtalk-mock .avatar {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      background: #3370FF;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .dingtalk-mock .bubble {
+      background: #F2F3F5;
+      padding: 10px 12px;
+      border-radius: 8px;
+      max-width: 260px;
+    }
+    .dingtalk-mock .doc-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      color: #3370FF;
+      font-weight: 500;
+    }
+
+    .email-mock {
+      background: #FFFFFF;
+      border-radius: 14px;
+      padding: 18px;
+      color: #1F2329;
+      font-size: 13px;
+      margin-top: 16px;
+      border: 1px solid #EBEDF0;
+      box-shadow: 0 2px 8px rgba(31, 35, 41, 0.04);
+    }
+    .email-mock .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .email-mock .row .label { color: #8F959E; width: 42px; flex-shrink: 0; }
+    .email-mock .row .value { color: #1F2329; }
+    .email-mock .subject { font-weight: 700; font-size: 15px; margin: 14px 0 10px; }
+    .email-mock .body { color: #646A73; line-height: 1.6; }
+
+    .wechat-mock {
+      background: #EDEDED;
+      border-radius: 14px;
+      padding: 18px;
+      color: #1F2329;
+      font-size: 13px;
+      margin-top: 16px;
+      border: 1px solid #E0E0E0;
+      box-shadow: 0 2px 8px rgba(31, 35, 41, 0.04);
+    }
+    .wechat-mock .wx-msg {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .wechat-mock .wx-msg:last-child { margin-bottom: 0; }
+    .wechat-mock .wx-msg.me {
+      flex-direction: row-reverse;
+    }
+    .wechat-mock .wx-avatar {
+      width: 34px; height: 34px;
+      border-radius: 6px;
+      background: #07C160;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+    .wechat-mock .wx-bubble {
+      background: white;
+      padding: 10px 12px;
+      border-radius: 6px;
+      max-width: 240px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .wechat-mock .wx-msg.me .wx-bubble { background: #95EC69; }
+
+    .bottom-bar {
+      margin-top: 44px;
+      padding: 26px 32px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+    }
+    .bottom-bar .quote {
+      font-size: 23px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .bottom-bar .quote span { color: var(--red); }
+    .bottom-bar .stats {
+      display: flex;
+      gap: 48px;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat .num {
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--red);
+      font-family: var(--mono);
+    }
+    .stat .label {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">PAIN POINT 01</div>
+      <h2 class="anim-fade-up delay-2">
+        文档散落在 <span class="weak">钉钉、邮件、微信群、Notion</span>
+      </h2>
+    </div>
+
+    <div class="cards">
+      <div class="card anim-fade-up delay-2">
+        <div class="card-header">
+          <div class="card-icon">💬</div>
+          <div>
+            <div class="card-title">钉钉里丢链接</div>
+            <div class="card-sub">“最新版在这，群里翻一下”</div>
+          </div>
+        </div>
+        <div class="card-body">
+          群里@全员发文档链接，过几天就被消息淹没。新人入职想查历史需求，需要爬楼几十屏。
+          <div class="dingtalk-mock">
+            <div class="msg">
+              <div class="avatar">PM</div>
+              <div class="bubble">
+                各位，PRD 已更新，请大家本周五前评审完
+                <div class="doc-link">📄 用户增长需求V3.docx</div>
+              </div>
+            </div>
+            <div class="msg">
+              <div class="avatar">RD</div>
+              <div class="bubble">这是第几版了？上一个链接是不是过期了？</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card anim-fade-up delay-3">
+        <div class="card-header">
+          <div class="card-icon">✉️</div>
+          <div>
+            <div class="card-title">邮件里串版本</div>
+            <div class="card-sub">“Re: Re: Re: 需求确认”</div>
+          </div>
+        </div>
+        <div class="card-body">
+          评审意见散落在邮件回复链里，研发同学需要手动汇总。版本一变，前面的结论就失效。
+          <div class="email-mock">
+            <div class="row"><span class="label">发件人</span><span class="value">产品经理 A</span></div>
+            <div class="row"><span class="label">收件人</span><span class="value">研发组（12人）</span></div>
+            <div class="subject">Re: Re: Re: 用户增长需求确认 —— 第4版修订</div>
+            <div class="body">
+              大家在第3版的基础上又提了7条意见，我整理在了附件里。请查看最新附件“用户增长需求V4_最终版_真的最终版.docx”。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card anim-fade-up delay-4">
+        <div class="card-header">
+          <div class="card-icon">📱</div>
+          <div>
+            <div class="card-title">微信群里拍脑袋</div>
+            <div class="card-sub">“那个需求先别做，等一下我拉会”</div>
+          </div>
+        </div>
+        <div class="card-body">
+          关键决策只留在群聊上下文，没有沉淀。产品改方向了，但文档没更新，研发和测试按旧版执行。
+          <div class="wechat-mock">
+            <div class="wx-msg">
+              <div class="wx-avatar">老板</div>
+              <div class="wx-bubble">这个优先级调一下，先做B端功能</div>
+            </div>
+            <div class="wx-msg me">
+              <div class="wx-avatar">PM</div>
+              <div class="wx-bubble">收到，我去同步文档</div>
+            </div>
+            <div class="wx-msg">
+              <div class="wx-avatar">测试</div>
+              <div class="wx-bubble">文档好像还是旧版，按哪个测？</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar anim-fade-up delay-5">
+      <div class="quote">
+        结果：<span>找文档 10 分钟，确认版本 20 分钟，真正理解需求 5 分钟。</span>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="num">4+</div>
+          <div class="label">信息源</div>
+        </div>
+        <div class="stat">
+          <div class="num">N</div>
+          <div class="label">版本号</div>
+        </div>
+        <div class="stat">
+          <div class="num">?</div>
+          <div class="label">可信来源</div>
+        </div>
+      </div>
+    </div>
+  </div>
+    <div class="page-footer"><span class="current">04</span> / 20 · Kris</div>
+  </body>
+</html>

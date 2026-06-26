@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>16 我的工作流</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 60px 100px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 40px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 52px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--text);
+    }
+    h2 .weak { color: var(--muted); font-weight: 500; }
+
+    /* Main content area */
+    .content {
+      flex: 1;
+      display: flex;
+      gap: 60px;
+      min-height: 0;
+    }
+
+    /* Left: Timeline */
+    .timeline {
+      width: 320px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .timeline-line {
+      position: absolute;
+      left: 20px;
+      top: 16px;
+      bottom: 60px;
+      width: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .timeline-line-active {
+      position: absolute;
+      left: 20px;
+      top: 16px;
+      width: 2px;
+      background: var(--accent);
+      z-index: 1;
+      transform-origin: top;
+      animation: drawLine 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes drawLine {
+      from { height: 0; }
+      to { height: calc(100% - 76px); }
+    }
+
+    .timeline-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 0;
+      position: relative;
+      z-index: 2;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .timeline-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--border);
+      border: 2px solid var(--panel);
+      box-shadow: 0 0 0 2px var(--border);
+      flex-shrink: 0;
+      margin-top: 6px;
+      transition: all 0.3s ease;
+    }
+    .timeline-item.active .timeline-dot {
+      background: var(--accent);
+      box-shadow: 0 0 0 3px rgba(184, 92, 56, 0.2);
+      transform: scale(1.3);
+    }
+    .timeline-item.green .timeline-dot {
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.2);
+    }
+    .timeline-item.blue .timeline-dot {
+      background: var(--blue);
+      box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
+    }
+    .timeline-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--muted);
+      line-height: 1.4;
+      transition: color 0.3s ease;
+    }
+    .timeline-item.active .timeline-text {
+      color: var(--text);
+      font-weight: 700;
+    }
+    .timeline-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 2px;
+      opacity: 0.7;
+    }
+
+    /* Right: Detail panel */
+    .detail-panel {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 56px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    .detail-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 24px 24px 0 0;
+    }
+
+    .detail-header {
+      margin-bottom: 32px;
+    }
+    .detail-step-num {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+    }
+    .detail-title {
+      font-family: var(--serif);
+      font-size: 42px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+    .detail-role {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(184, 92, 56, 0.08);
+      color: var(--accent);
+    }
+    .detail-role.green {
+      background: rgba(74, 124, 89, 0.08);
+      color: var(--green);
+    }
+    .detail-role.blue {
+      background: rgba(74, 111, 165, 0.08);
+      color: var(--blue);
+    }
+
+    .detail-desc {
+      font-size: 20px;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 40px;
+      max-width: 600px;
+    }
+    .detail-desc strong {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .detail-output {
+      margin-top: auto;
+      padding: 24px 28px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+    .output-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+    .output-content {
+      font-family: var(--mono);
+      font-size: 16px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .output-tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(184, 92, 56, 0.1);
+      color: var(--accent);
+      margin-right: 8px;
+    }
+    .output-tag.blue {
+      background: rgba(74, 111, 165, 0.1);
+      color: var(--blue);
+    }
+    .output-tag.green {
+      background: rgba(74, 124, 89, 0.1);
+      color: var(--green);
+    }
+
+    /* Loop arrow at bottom */
+    .loop-section {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .loop-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      position: relative;
+    }
+    .loop-line::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: -3px;
+      width: 0;
+      height: 0;
+      border-left: 6px solid var(--border);
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+    }
+    .loop-text {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* Bottom annotations */
+    .bottom-bar {
+      margin-top: 32px;
+      display: flex;
+      gap: 20px;
+    }
+    .anno {
+      flex: 1;
+      padding: 20px 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+      position: relative;
+      overflow: hidden;
+    }
+    .anno::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+    }
+    .anno strong { color: var(--text); font-weight: 700; }
+    .anno-accent { border-color: rgba(184, 92, 56, 0.2); }
+    .anno-accent::before { background: var(--accent); }
+    .anno-green { border-color: rgba(74, 124, 89, 0.2); }
+    .anno-green::before { background: var(--green); }
+    .anno-blue { border-color: rgba(74, 111, 165, 0.2); }
+    .anno-blue::before { background: var(--blue); }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.25s; }
+    .delay-3 { animation-delay: 0.4s; }
+    .delay-4 { animation-delay: 0.55s; }
+    .delay-5 { animation-delay: 0.7s; }
+    .delay-6 { animation-delay: 0.85s; }
+    .delay-7 { animation-delay: 1.0s; }
+    .delay-8 { animation-delay: 1.15s; }
+    .delay-9 { animation-delay: 1.3s; }
+    .delay-10 { animation-delay: 1.45s; }
+    .delay-11 { animation-delay: 1.6s; }
+
+    /* Active step highlight */
+    .step-content {
+      display: none;
+    }
+    .step-content.active {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-up delay-1">MY WORKFLOW</div>
+      <h2 class="anim-fade-up delay-2">我的工作流：<span class="weak">从 Idea 到 Diff 的完整闭环</span></h2>
+    </div>
+
+    <div class="content">
+      <!-- Left: Timeline -->
+      <div class="timeline anim-fade-left delay-3">
+        <div class="timeline-line"></div>
+        <div class="timeline-line-active"></div>
+
+        <div class="timeline-item active" data-step="1">
+          <div class="timeline-dot"></div>
+          <div class="timeline-text">
+            <div class="timeline-num">STEP 01</div>
+            产品 Idea / 需求目标
+          </div>
+        </div>
+
+        <div class="timeline-item green" data-step="2">
+          <div class="timeline-dot"></div>
+          <div class="timeline-text">
+            <div class="timeline-num">STEP 02</div>
+            与 Hermes 交流 → 输出 PRD
+          </div>
+        </div>
+
+        <div class="timeline-item blue" data-step="3">
+          <div class="timeline-dot"></div>
+          <div class="timeline-text">
+            <div class="timeline-num">STEP 03</div>
+            部署到 Git 仓库
+          </div>
+        </div>
+
+        <div class="timeline-item green" data-step="4">
+          <div class="timeline-dot"></div>
+          <div class="timeline-text">
+            <div class="timeline-num">STEP 04</div>
+            输出 Demo（HTML 原型）
+          </div>
+        </div>
+
+        <div class="timeline-item" data-step="5">
+          <div class="timeline-dot"></div>
+          <div class="timeline-text">
+            <div class="timeline-num">STEP 05</div>
+            部署到 GitHub Pages
+          </div>
+        </div>
+
+        <div class="timeline-item green" data-step="6">
+          <div class="timeline-dot"></div>
+          <div class="timeline-text">
+            <div class="timeline-num">STEP 06</div>
+            继续修改 → 再部署
+          </div>
+        </div>
+
+        <div class="timeline-item blue" data-step="7">
+          <div class="timeline-dot"></div>
+          <div class="timeline-text">
+            <div class="timeline-num">STEP 07</div>
+            开发同学看到 Diff
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Detail Panel -->
+      <div class="detail-panel anim-scale delay-4">
+        <!-- Step 1 -->
+        <div class="step-content active" id="step-1">
+          <div class="detail-header">
+            <div class="detail-step-num">STEP 01 / 07</div>
+            <div class="detail-title">产品 Idea<br/>需求目标</div>
+            <span class="detail-role">PM</span>
+          </div>
+          <div class="detail-desc">
+            <strong>明确要解决的问题</strong>：用自然语言描述需求场景、目标用户和预期效果。不需要先画原型，先想清楚"为什么"。
+          </div>
+          <div class="detail-output">
+            <div class="output-label">Output</div>
+            <div class="output-content">
+              <span class="output-tag">需求描述</span>
+              "想做一个会员系统的定价页，支持月付/年付切换"
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-content" id="step-2">
+          <div class="detail-header">
+            <div class="detail-step-num">STEP 02 / 07</div>
+            <div class="detail-title">与 Hermes 交流<br/>输出 PRD</div>
+            <span class="detail-role green">AI</span>
+          </div>
+          <div class="detail-desc">
+            <strong>结合 PRD 相关 skills</strong>：把需求抛给 Hermes Agent，通过多轮对话澄清边界、补充场景、细化验收标准，最终输出结构化 PRD。
+          </div>
+          <div class="detail-output">
+            <div class="output-label">Output</div>
+            <div class="output-content">
+              <span class="output-tag">prd.md</span>
+              <a href="https://github.com/dongtonghui/AIPoweredWorkSpace/blob/main/membership-system/prd.md" target="_blank" style="color: var(--accent); text-decoration: underline; cursor: pointer; pointer-events: auto;">https://github.com/dongtonghui/AIPoweredWorkSpace/blob/main/membership-system/prd.md</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-content" id="step-3">
+          <div class="detail-header">
+            <div class="detail-step-num">STEP 03 / 07</div>
+            <div class="detail-title">部署到<br/>Git 仓库</div>
+            <span class="detail-role blue">RD</span>
+          </div>
+          <div class="detail-desc">
+            <strong>PRD 成为知识库起点</strong>：把 prd.md 提交到 Git 仓库，每次迭代都有完整历史。本质上逐渐形成包含大量产品细节的知识库。
+          </div>
+          <div class="detail-output">
+            <div class="output-label">Output</div>
+            <div class="output-content">
+              <span class="output-tag blue">git commit</span>
+              "feat: add membership pricing PRD v1"
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step-content" id="step-4">
+          <div class="detail-header">
+            <div class="detail-step-num">STEP 04 / 07</div>
+            <div class="detail-title">输出 Demo<br/>HTML 原型</div>
+            <span class="detail-role green">AI</span>
+          </div>
+          <div class="detail-desc">
+            <strong>结合 Demo 设计 skills</strong>：基于 PRD 让 Hermes 生成高保真 HTML 原型，可交互、可预览、可直接在浏览器中体验。
+          </div>
+          <div class="detail-output">
+            <div class="output-label">Output</div>
+            <div class="output-content">
+              <span class="output-tag green">demo.html</span>
+              <a href="https://dongtonghui.github.io/AIPoweredWorkSpace/ring-light/" target="_blank" style="color: var(--green); text-decoration: underline; cursor: pointer; pointer-events: auto;">https://dongtonghui.github.io/AIPoweredWorkSpace/ring-light/</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step-content" id="step-5">
+          <div class="detail-header">
+            <div class="detail-step-num">STEP 05 / 07</div>
+            <div class="detail-title">部署到 Git 仓库<br/>→ GitHub Pages</div>
+            <span class="detail-role blue">RD</span>
+          </div>
+          <div class="detail-desc">
+            <strong>自动部署为在线 URL</strong>：Demo 文件随仓库推送，GitHub Pages 自动发布为可访问的 HTML 链接，团队所有人都能打开。
+          </div>
+          <div class="detail-output">
+            <div class="output-label">Output</div>
+            <div class="output-content">
+              <span class="output-tag">https://...</span>
+              /demo/index.html 在线可访问
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="step-content" id="step-6">
+          <div class="detail-header">
+            <div class="detail-step-num">STEP 06 / 07</div>
+            <div class="detail-title">继续修改<br/>→ 再部署</div>
+            <span class="detail-role">PM</span>
+          </div>
+          <div class="detail-desc">
+            <strong>持续打磨</strong>：看到线上效果后提出调整，Hermes 修改后再 push，GitHub Pages 自动更新。循环直到满意。
+          </div>
+          <div class="detail-output">
+            <div class="output-label">Output</div>
+            <div class="output-content">
+              <span class="output-tag green">git push</span>
+              每次 push 自动更新线上原型
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 7 -->
+        <div class="step-content" id="step-7">
+          <div class="detail-header">
+            <div class="detail-step-num">STEP 07 / 07</div>
+            <div class="detail-title">开发同学<br/>看到 Diff</div>
+            <span class="detail-role blue">RD</span>
+          </div>
+          <div class="detail-desc">
+            <strong>改动点一目了然</strong>：研发通过 Git diff 精确看到每处变更——改了什么、为什么改、谁改的。无需口头同步。
+          </div>
+          <div class="detail-output">
+            <div class="output-label">Output</div>
+            <div class="output-content">
+              <span class="output-tag blue">git diff</span>
+              行级变更追踪，可评论可评审
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loop section -->
+    <div class="loop-section anim-fade-up delay-10">
+      <div class="loop-line"></div>
+      <div class="loop-text">← 迭代循环 →</div>
+      <div class="loop-line"></div>
+    </div>
+
+    <!-- Bottom annotations -->
+    <div class="bottom-bar">
+      <div class="anno anno-accent anim-fade-up delay-11">
+        <strong>核心收益：</strong> PRD + Demo + 迭代历史全部在同一个 Git 仓库里，PM 和研发共享同一套"事实来源"
+      </div>
+      <div class="anno anno-green anim-fade-up delay-11">
+        <strong>AI 角色：</strong> Hermes 负责生成草稿和原型，PM 负责决策和验收，研发负责评审和实现
+      </div>
+      <div class="anno anno-blue anim-fade-up delay-11">
+        <strong>研发视角：</strong> 不需要等 PM 口头同步，打开 GitHub 就能看到最新原型和全部变更记录
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple step switching on click
+    document.querySelectorAll('.timeline-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const step = item.dataset.step;
+        // Update timeline
+        document.querySelectorAll('.timeline-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        // Update detail panel
+        document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
+        document.getElementById(`step-${step}`).classList.add('active');
+      });
+    });
+  </script>
+    <div class="page-footer"><span class="current">16</span> / 20 · Kris</div>
+  </body>
+</html>

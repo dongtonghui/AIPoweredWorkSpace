@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>18 Q&A</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.3;
+      pointer-events: none;
+    }
+    .blob-1 { width: 600px; height: 600px; background: #E8D5C4; top: -200px; left: -150px; }
+    .blob-2 { width: 500px; height: 500px; background: #D4E4D4; bottom: -150px; right: -100px; }
+
+    .slide {
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .qa-mark {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: var(--panel);
+      border: 2px solid var(--border);
+      display: grid;
+      place-items: center;
+      font-size: 56px;
+      margin-bottom: 40px;
+      box-shadow: 0 12px 48px rgba(44, 36, 27, 0.08);
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards, pulse 3s ease-in-out 1s infinite;
+      will-change: transform, opacity;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 96px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      margin-bottom: 32px;
+    }
+    .subtitle {
+      font-size: 32px;
+      color: var(--muted);
+      margin-bottom: 64px;
+    }
+    .contact {
+      display: flex;
+      gap: 32px;
+      font-size: 18px;
+      color: var(--muted);
+    }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.04);
+    }
+    .footer {
+      position: absolute;
+      bottom: 48px;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: 15px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.85; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="blob blob-1 anim-float"></div>
+  <div class="blob blob-2 anim-float"></div>
+
+  <div class="slide">
+    <div class="qa-mark">?</div>
+    <h2 class="anim-fade-up delay-2">Q & A</h2>
+    <div class="subtitle anim-fade-up delay-3">感谢聆听 · 欢迎提问</div>
+    <div class="contact anim-fade-up delay-4">
+      <div class="contact-item anim-fade-up delay-4">
+        <span>📧</span>
+        <span>分享人邮箱：待填写</span>
+      </div>
+      <div class="contact-item anim-fade-up delay-5">
+        <span>💬</span>
+        <span>钉钉群：待填写</span>
+      </div>
+    </div>
+    <div class="footer anim-fade-up delay-6">AI 时代基于 GitHub 的产研协作 · 2026.06.24</div>
+  </div>
+    <div class="page-footer"><span class="current">20</span> / 20 · Kris</div>
+  </body>
+</html>

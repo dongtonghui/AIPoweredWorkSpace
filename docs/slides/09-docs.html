@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>08 GitHub 文档管理</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 44px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    .main {
+      flex: 1;
+      display: flex;
+      gap: 40px;
+      min-height: 0;
+    }
+    .left {
+      width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .right {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .benefit {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.04);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .benefit:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(44, 36, 27, 0.12);
+    }
+    .benefit-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .benefit-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .benefit-title { font-size: 20px; font-weight: 700; }
+    .benefit-desc { font-size: 16px; color: var(--muted); line-height: 1.6; }
+
+    .gh-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg);
+    }
+    .gh-header svg { width: 24px; height: 24px; }
+    .gh-header .repo { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+    .gh-header .branch {
+      margin-left: auto;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: var(--mono);
+      background: var(--panel);
+    }
+    .gh-content {
+      flex: 1;
+      padding: 24px;
+      overflow: auto;
+    }
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .file-item:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 24px rgba(44, 36, 27, 0.08);
+    }
+    .file-item .icon { font-size: 18px; }
+    .file-item .name { font-family: var(--mono); flex: 1; }
+    .file-item .msg { color: var(--muted); font-size: 13px; }
+    .file-item .time { color: var(--muted); font-size: 13px; font-family: var(--mono); }
+
+    .markdown-preview {
+      margin-top: 24px;
+      padding: 24px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.7;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .markdown-preview:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(44, 36, 27, 0.08);
+    }
+    .markdown-preview h3 { font-size: 20px; margin-bottom: 12px; }
+    .markdown-preview p { color: var(--muted); margin-bottom: 12px; }
+    .markdown-preview code {
+      background: rgba(184, 92, 56, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      color: var(--accent);
+    }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">DOCS ON GITHUB</div>
+      <h2 class="anim-fade-up delay-2">GitHub 文档管理：<span class="weak">Markdown + PR 评审</span></h2>
+    </div>
+
+    <div class="main">
+      <div class="left">
+        <div class="benefit anim-fade-up delay-2">
+          <div class="benefit-header">
+            <div class="benefit-icon">📄</div>
+            <div class="benefit-title">Markdown 原生友好</div>
+          </div>
+          <div class="benefit-desc"><code>README.md</code>、<code>docs/</code> 文件夹，PM 写起来简单，研发读起来亲切，GitHub 还能自动渲染。</div>
+        </div>
+
+        <div class="benefit anim-fade-up delay-3">
+          <div class="benefit-header">
+            <div class="benefit-icon">🌿</div>
+            <div class="benefit-title">分支管理需求版本</div>
+          </div>
+          <div class="benefit-desc">每个需求一个分支，<code>feature/user-growth-v3</code>，版本之间互不覆盖，随时对比。</div>
+        </div>
+
+        <div class="benefit anim-fade-up delay-4">
+          <div class="benefit-header">
+            <div class="benefit-icon">✅</div>
+            <div class="benefit-title">PR 即评审会</div>
+          </div>
+          <div class="benefit-desc">改文档也走 Pull Request，每个修改都要 reviewer 批准，责任人和审批记录自动留存。</div>
+        </div>
+      </div>
+
+      <div class="right anim-fade-right delay-3">
+        <div class="gh-header anim-fade-up delay-3">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          <span class="repo">acme-product / docs</span>
+          <span class="branch">🌿 main</span>
+        </div>
+        <div class="gh-content">
+          <div class="file-list">
+            <div class="file-item anim-fade-up delay-4">
+              <span class="icon">📁</span>
+              <span class="name">docs/</span>
+              <span class="msg">产品文档目录</span>
+              <span class="time">2天前</span>
+            </div>
+            <div class="file-item anim-fade-up delay-5">
+              <span class="icon">📄</span>
+              <span class="name">docs/prd/user-growth-v3.md</span>
+              <span class="msg">更新推荐策略</span>
+              <span class="time">昨天</span>
+            </div>
+            <div class="file-item anim-fade-up delay-6">
+              <span class="icon">📄</span>
+              <span class="name">docs/rfc/checkout-redesign.md</span>
+              <span class="msg">新增结算页方案</span>
+              <span class="time">3天前</span>
+            </div>
+          </div>
+
+          <div class="markdown-preview anim-fade-up delay-6">
+            <h3>用户增长需求 V3</h3>
+            <p><strong>目标：</strong> 通过个性化推荐提升次月留存 5%。</p>
+            <p><strong>核心改动：</strong> 首页增加“猜你喜欢”模块，推荐算法由规则引擎切换为协同过滤。</p>
+            <p><strong>评审状态：</strong> <code>@tech-lead</code> 已批准，等待 PMO 确认上线窗口。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    <div class="page-footer"><span class="current">09</span> / 20 · Kris</div>
+  </body>
+</html>

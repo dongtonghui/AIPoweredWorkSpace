@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>14 完整工作流</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 44px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    .diagram {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 0;
+    }
+    .stage {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 480px;
+    }
+    .stage-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .stage-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .stage-title { font-size: 20px; font-weight: 700; }
+    .stage-role {
+      margin-left: auto;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: var(--mono);
+    }
+    .stage-role.pm { background: rgba(184, 92, 56, 0.1); color: var(--accent); }
+    .stage-role.rd { background: rgba(74, 111, 165, 0.1); color: var(--blue); }
+    .stage-role.ai { background: rgba(74, 124, 89, 0.1); color: var(--green); }
+    .stage-role.team { background: rgba(122, 117, 109, 0.1); color: var(--muted); }
+    .stage-body {
+      flex: 1;
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.7;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .stage-body strong { color: var(--text); }
+    .stage-output {
+      margin-top: auto;
+      padding: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      font-family: var(--mono);
+      flex-shrink: 0;
+    }
+    .arrow-line {
+      width: 32px;
+      height: 2px;
+      background: var(--accent);
+      position: relative;
+    }
+    .arrow-line::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: -4px;
+      border: 5px solid transparent;
+      border-left: 8px solid var(--accent);
+    }
+
+    .bottom {
+      margin-top: 36px;
+      padding: 22px 32px;
+      background: rgba(74, 124, 89, 0.06);
+      border: 1px solid rgba(74, 124, 89, 0.2);
+      border-radius: 14px;
+      font-size: 19px;
+      color: var(--text);
+      font-weight: 600;
+      text-align: center;
+    }
+    .bottom span { color: var(--green); }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+
+    /* Arrow line animation */
+    .arrow-line {
+      transform-origin: left center;
+      animation: scaleX 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes scaleX {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+
+    /* Hover effects */
+    .stage {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .stage:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(44, 36, 27, 0.12);
+    }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">END-TO-END WORKFLOW</div>
+      <h2 class="anim-fade-up delay-2">完整工作流：<span class="weak">从 idea 到 merge 到线上 URL</span></h2>
+    </div>
+
+    <div class="diagram">
+      <div class="stage anim-fade-up delay-2">
+        <div class="stage-header">
+          <div class="stage-icon">💡</div>
+          <div class="stage-title">Idea</div>
+          <span class="stage-role pm">PM</span>
+        </div>
+        <div class="stage-body">
+          <strong>PM 提出需求：</strong> 用自然语言描述问题、目标和预期效果。不需要先画模板。
+        </div>
+        <div class="stage-output anim-fade-up delay-3">“想提升首页转化率”</div>
+      </div>
+
+      <div class="arrow anim-fade-up delay-3">
+        <div class="arrow-line"></div>
+      </div>
+
+      <div class="stage anim-fade-up delay-3">
+        <div class="stage-header">
+          <div class="stage-icon">🤖</div>
+          <div class="stage-title">AI 生成</div>
+          <span class="stage-role ai">Hermes</span>
+        </div>
+        <div class="stage-body">
+          <strong>Agent 产出双份资产：</strong> Markdown PRD + HTML 原型文件，直接写入本地仓库。
+        </div>
+        <div class="stage-output anim-fade-up delay-4">prd.md + prototype.html</div>
+      </div>
+
+      <div class="arrow anim-fade-up delay-4">
+        <div class="arrow-line"></div>
+      </div>
+
+      <div class="stage anim-fade-up delay-4">
+        <div class="stage-header">
+          <div class="stage-icon">🌿</div>
+          <div class="stage-title">PR 评审</div>
+          <span class="stage-role team">Team</span>
+        </div>
+        <div class="stage-body">
+          <strong>团队在线评审：</strong> PM 审业务、研发审可行性、测试审验收标准。讨论沉淀在行级评论。
+        </div>
+        <div class="stage-output anim-fade-up delay-5">Approved / Request changes</div>
+      </div>
+
+      <div class="arrow anim-fade-up delay-5">
+        <div class="arrow-line"></div>
+      </div>
+
+      <div class="stage anim-fade-up delay-5">
+        <div class="stage-header">
+          <div class="stage-icon">✅</div>
+          <div class="stage-title">Merge</div>
+          <span class="stage-role rd">RD</span>
+        </div>
+        <div class="stage-body">
+          <strong>合并到主分支：</strong> 文档和原型成为团队共识。Git 历史完整记录谁、什么时候、为什么 merge。
+        </div>
+        <div class="stage-output anim-fade-up delay-6">merged into main</div>
+      </div>
+
+      <div class="arrow anim-fade-up delay-6">
+        <div class="arrow-line"></div>
+      </div>
+
+      <div class="stage anim-fade-up delay-6">
+        <div class="stage-header">
+          <div class="stage-icon">🚀</div>
+          <div class="stage-title">Deploy</div>
+          <span class="stage-role ai">CI/CD</span>
+        </div>
+        <div class="stage-body">
+          <strong>自动发布 URL：</strong> GitHub Pages / Actions 自动部署，所有人打开同一个最新链接。
+        </div>
+        <div class="stage-output anim-fade-up delay-7">https://.../prototype</div>
+      </div>
+    </div>
+
+    <div class="bottom anim-fade-up delay-7">
+      整个链路中，<span>Idea、文档、原型、评审记录、部署地址全部在同一个 GitHub 仓库里</span>，没有信息孤岛。
+    </div>
+  </div>
+    <div class="page-footer"><span class="current">15</span> / 20 · Kris</div>
+  </body>
+</html>

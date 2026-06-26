@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>16 踩坑与边界</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --red: #B85C38;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 80px 110px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 48px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--red);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    .main {
+      flex: 1;
+      display: flex;
+      gap: 48px;
+      min-height: 0;
+    }
+    .dont {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .dont-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--red);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .item {
+      padding: 20px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .item:hover {
+      transform: translateX(4px);
+    }
+    .item-title { font-size: 18px; font-weight: 700; }
+    .item-desc { font-size: 15px; color: var(--muted); line-height: 1.6; }
+    .item-alt { font-size: 14px; color: var(--green); font-weight: 600; margin-top: 4px; }
+
+    .do {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 4px 16px rgba(44, 36, 27, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .do-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-right {
+      opacity: 0;
+      animation: fadeSlideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+  
+    .page-footer {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+    .page-footer .current { color: var(--accent); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">BOUNDARIES</div>
+      <h2 class="anim-fade-up delay-2">踩坑与边界：<span class="weak">什么时候 GitHub 不是最佳解</span></h2>
+    </div>
+
+    <div class="main">
+      <div class="dont anim-fade-left delay-2">
+        <div class="dont-title anim-fade-up delay-2">⚠️ 不适合 GitHub 的场景</div>
+
+        <div class="item anim-fade-up delay-3">
+          <div class="item-title">敏感或合规文档</div>
+          <div class="item-desc">HR 档案、薪酬、合同等需要严格权限和审计的文档。</div>
+          <div class="item-alt">→ 留在钉钉审批 / 企业网盘 / HR 系统</div>
+        </div>
+
+        <div class="item anim-fade-up delay-4">
+          <div class="item-title">实时头脑风暴</div>
+          <div class="item-desc">需要多人同时在线涂涂改改、快速发散的早期创意阶段。</div>
+          <div class="item-alt">→ 先用白板/Figma/钉钉文档跑，沉淀后再进 GitHub</div>
+        </div>
+
+        <div class="item anim-fade-up delay-5">
+          <div class="item-title">强 WYSIWYG 排版需求</div>
+          <div class="item-desc">需要复杂表格、图文混排、打印级排版的正式报告。</div>
+          <div class="item-alt">→ 飞书/Word 定稿后，把摘要和结论同步到 GitHub</div>
+        </div>
+      </div>
+
+      <div class="do anim-fade-right delay-3">
+        <div class="do-title anim-fade-up delay-3">✅ 适合 GitHub 的场景</div>
+
+        <div class="item anim-fade-up delay-4">
+          <div class="item-title">需要版本控制的文档</div>
+          <div class="item-desc">PRD、RFC、技术方案、API 文档——需要多人审校、追踪变更、回滚版本。</div>
+        </div>
+
+        <div class="item anim-fade-up delay-5">
+          <div class="item-title">需要共享 URL 的原型</div>
+          <div class="item-desc">HTML 原型、内部工具 demo、设计概念验证——需要一处修改、全员可见。</div>
+        </div>
+
+        <div class="item anim-fade-up delay-6">
+          <div class="item-title">跨团队协作的交付物</div>
+          <div class="item-desc">PM、研发、测试、设计都需要看、都需要评论的产出物。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+    <div class="page-footer"><span class="current">18</span> / 20 · Kris</div>
+  </body>
+</html>
