@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>16 我的工作流</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F7F3ED;
+      --panel: #FFFFFF;
+      --border: #E5DDD2;
+      --text: #2C241B;
+      --muted: #7D7166;
+      --accent: #B85C38;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      width: 1920px; height: 1080px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .slide {
+      width: 100%; height: 100%;
+      padding: 72px 100px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 36px; }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: 52px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h2 .weak { color: var(--muted); font-weight: 600; }
+
+    /* Flow diagram container */
+    .flow-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-height: 0;
+    }
+
+    /* Row: step card + arrow + next step */
+    .flow-row {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* Step card */
+    .step {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 2px 10px rgba(44, 36, 27, 0.04);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .step:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(44, 36, 27, 0.1);
+    }
+    .step::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--accent);
+    }
+    .step.step-prd::before { background: var(--accent); }
+    .step.step-repo::before { background: var(--blue); }
+    .step.step-demo::before { background: var(--green); }
+    .step.step-deploy::before { background: var(--accent); }
+    .step.step-iterate::before { background: var(--green); }
+    .step.step-diff::before { background: var(--blue); }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .step-num {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--panel);
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .step-num.num-repo { background: var(--blue); }
+    .step-num.num-demo { background: var(--green); }
+    .step-num.num-deploy { background: var(--accent); }
+    .step-num.num-iterate { background: var(--green); }
+    .step-num.num-diff { background: var(--blue); }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .step-role {
+      margin-left: auto;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: var(--mono);
+      text-transform: uppercase;
+    }
+    .step-role.pm { background: rgba(184, 92, 56, 0.1); color: var(--accent); }
+    .step-role.ai { background: rgba(74, 124, 89, 0.1); color: var(--green); }
+    .step-role.rd { background: rgba(74, 111, 165, 0.1); color: var(--blue); }
+
+    .step-desc {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .step-desc strong { color: var(--text); font-weight: 600; }
+
+    .step-output {
+      margin-top: auto;
+      padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-output .tag {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(184, 92, 56, 0.1);
+      color: var(--accent);
+    }
+    .step-output .tag-blue {
+      background: rgba(74, 111, 165, 0.1);
+      color: var(--blue);
+    }
+    .step-output .tag-green {
+      background: rgba(74, 124, 89, 0.1);
+      color: var(--green);
+    }
+
+    /* Arrow between steps */
+    .arrow-col {
+      width: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .arrow-line-v {
+      width: 2px;
+      flex: 1;
+      background: var(--border);
+      position: relative;
+    }
+    .arrow-line-v::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: -4px;
+      border: 5px solid transparent;
+      border-top: 7px solid var(--border);
+    }
+    .arrow-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--bg);
+      padding: 2px 6px;
+      white-space: nowrap;
+      z-index: 1;
+    }
+
+    /* Bottom annotation */
+    .bottom-bar {
+      margin-top: 24px;
+      display: flex;
+      gap: 20px;
+    }
+    .anno {
+      flex: 1;
+      padding: 16px 20px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .anno strong { color: var(--text); }
+    .anno-accent {
+      border-color: rgba(184, 92, 56, 0.3);
+      background: rgba(184, 92, 56, 0.04);
+    }
+    .anno-green {
+      border-color: rgba(74, 124, 89, 0.3);
+      background: rgba(74, 124, 89, 0.04);
+    }
+    .anno-blue {
+      border-color: rgba(74, 111, 165, 0.3);
+      background: rgba(74, 111, 165, 0.04);
+    }
+
+    /* Keyframes */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes drawLineV {
+      from { transform: scaleY(0); }
+      to { transform: scaleY(1); }
+    }
+
+    /* Animation classes */
+    .anim-fade-up {
+      opacity: 0;
+      animation: fadeSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-fade-left {
+      opacity: 0;
+      animation: fadeSlideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-scale {
+      opacity: 0;
+      animation: scaleIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .anim-line {
+      transform-origin: top center;
+      animation: drawLineV 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Stagger delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+    .delay-7 { animation-delay: 0.7s; }
+    .delay-8 { animation-delay: 0.8s; }
+  </style>
+</head>
+<body>
+  <div class="texture"></div>
+  <div class="slide">
+    <div class="header">
+      <div class="kicker anim-fade-left delay-1">MY WORKFLOW</div>
+      <h2 class="anim-fade-up delay-2">我的工作流：<span class="weak">从 Idea 到 Diff 的完整闭环</span></h2>
+    </div>
+
+    <div class="flow-wrap">
+      <!-- Row 1: Idea + PRD -->
+      <div class="flow-row">
+        <div class="step step-prd anim-fade-up delay-2">
+          <div class="step-header">
+            <div class="step-num">01</div>
+            <div class="step-title">产品 Idea / 需求目标</div>
+            <span class="step-role pm">PM</span>
+          </div>
+          <div class="step-desc">
+            <strong>明确要解决的问题</strong>：用自然语言描述需求场景、目标用户和预期效果。不需要先画原型，先想清楚"为什么"。
+          </div>
+          <div class="step-output">
+            <span class="tag">需求描述</span>
+            "想做一个会员系统的定价页，支持月付/年付切换"
+          </div>
+        </div>
+
+        <div class="arrow-col">
+          <div class="arrow-line-v anim-line delay-3"></div>
+          <div class="arrow-label">交流</div>
+        </div>
+
+        <div class="step step-prd anim-fade-up delay-3">
+          <div class="step-header">
+            <div class="step-num">02</div>
+            <div class="step-title">与 Hermes 交流 → 输出 PRD</div>
+            <span class="step-role ai">AI</span>
+          </div>
+          <div class="step-desc">
+            <strong>结合 PRD 相关 skills</strong>：把需求抛给 Hermes Agent，通过多轮对话澄清边界、补充场景、细化验收标准，最终输出结构化 PRD。
+          </div>
+          <div class="step-output">
+            <span class="tag">prd.md</span>
+            包含需求背景、功能列表、验收标准、边界情况
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Git Repo + Demo -->
+      <div class="flow-row">
+        <div class="step step-repo anim-fade-up delay-4">
+          <div class="step-header">
+            <div class="step-num num-repo">03</div>
+            <div class="step-title">部署到 Git 仓库</div>
+            <span class="step-role rd">RD</span>
+          </div>
+          <div class="step-desc">
+            <strong>PRD 成为知识库起点</strong>：把 prd.md 提交到 Git 仓库，每次迭代都有完整历史。本质上逐渐形成包含大量产品细节的知识库。
+          </div>
+          <div class="step-output">
+            <span class="tag tag-blue">git commit</span>
+            "feat: add membership pricing PRD v1"
+          </div>
+        </div>
+
+        <div class="arrow-col">
+          <div class="arrow-line-v anim-line delay-5"></div>
+          <div class="arrow-label">生成</div>
+        </div>
+
+        <div class="step step-demo anim-fade-up delay-5">
+          <div class="step-header">
+            <div class="step-num num-demo">04</div>
+            <div class="step-title">输出 Demo（HTML 原型）</div>
+            <span class="step-role ai">AI</span>
+          </div>
+          <div class="step-desc">
+            <strong>结合 Demo 设计 skills</strong>：基于 PRD 让 Hermes 生成高保真 HTML 原型，可交互、可预览、可直接在浏览器中体验。
+          </div>
+          <div class="step-output">
+            <span class="tag tag-green">demo.html</span>
+            可交互的高保真原型文件
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: Deploy + Iterate + Diff -->
+      <div class="flow-row">
+        <div class="step step-deploy anim-fade-up delay-6">
+          <div class="step-header">
+            <div class="step-num num-deploy">05</div>
+            <div class="step-title">部署到 Git 仓库 → GitHub Pages</div>
+            <span class="step-role rd">RD</span>
+          </div>
+          <div class="step-desc">
+            <strong>自动部署为在线 URL</strong>：Demo 文件随仓库推送，GitHub Pages 自动发布为可访问的 HTML 链接，团队所有人都能打开。
+          </div>
+          <div class="step-output">
+            <span class="tag">https://...</span>
+            /demo/index.html 在线可访问
+          </div>
+        </div>
+
+        <div class="arrow-col">
+          <div class="arrow-line-v anim-line delay-7"></div>
+          <div class="arrow-label">迭代</div>
+        </div>
+
+        <div class="step step-iterate anim-fade-up delay-7">
+          <div class="step-header">
+            <div class="step-num num-iterate">06</div>
+            <div class="step-title">继续修改 → 再部署</div>
+            <span class="step-role pm">PM</span>
+          </div>
+          <div class="step-desc">
+            <strong>持续打磨</strong>：看到线上效果后提出调整，Hermes 修改后再 push，GitHub Pages 自动更新。循环直到满意。
+          </div>
+          <div class="step-output">
+            <span class="tag tag-green">git push</span>
+            每次 push 自动更新线上原型
+          </div>
+        </div>
+
+        <div class="arrow-col">
+          <div class="arrow-line-v anim-line delay-8"></div>
+          <div class="arrow-label">查看</div>
+        </div>
+
+        <div class="step step-diff anim-fade-up delay-8">
+          <div class="step-header">
+            <div class="step-num num-diff">07</div>
+            <div class="step-title">开发同学看到 Diff</div>
+            <span class="step-role rd">RD</span>
+          </div>
+          <div class="step-desc">
+            <strong>改动点一目了然</strong>：研发通过 Git diff 精确看到每处变更——改了什么、为什么改、谁改的。无需口头同步。
+          </div>
+          <div class="step-output">
+            <span class="tag tag-blue">git diff</span>
+            行级变更追踪，可评论可评审
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="anno anno-accent">
+        <strong>核心收益：</strong> PRD + Demo + 迭代历史全部在同一个 Git 仓库里，PM 和研发共享同一套"事实来源"
+      </div>
+      <div class="anno anno-green">
+        <strong>AI 角色：</strong> Hermes 负责生成草稿和原型，PM 负责决策和验收，研发负责评审和实现——人机协作
+      </div>
+      <div class="anno anno-blue">
+        <strong>研发视角：</strong> 不需要等 PM 口头同步，打开 GitHub 就能看到最新原型和全部变更记录
+      </div>
+    </div>
+  </div>
+</body>
+</html>
