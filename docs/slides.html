@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 时代基于 GitHub 的产研协作</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #FAF8F3;
+      --panel: #FFFFFF;
+      --border: #E8E4DC;
+      --text: #2D2A26;
+      --muted: #7A756D;
+      --accent: #C45C26;
+      --green: #4A7C59;
+      --blue: #4A6FA5;
+      --shadow: 0 12px 32px rgba(45, 42, 38, 0.08);
+      --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      overflow: hidden;
+    }
+
+    /* Overview */
+    #overview {
+      position: fixed;
+      inset: 0;
+      overflow-y: auto;
+      padding: 48px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 28px;
+      align-content: start;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+    #overview.hidden { opacity: 0; pointer-events: none; }
+    .slide-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(45, 42, 38, 0.04);
+    }
+    .slide-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: var(--shadow);
+    }
+    .slide-card iframe {
+      width: 1920px;
+      height: 1080px;
+      transform-origin: 0 0;
+      border: 0;
+      pointer-events: none;
+    }
+    .slide-card .label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 14px;
+      background: linear-gradient(transparent, rgba(250,248,243,0.98));
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .slide-card .label strong { color: var(--text); font-weight: 600; }
+
+    /* Presentation */
+    #present {
+      position: fixed;
+      inset: 0;
+      background: #F5F2EA;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    #present.active { display: flex; }
+    #stage {
+      width: 1920px;
+      height: 1080px;
+      transform-origin: center center;
+      box-shadow: 0 24px 80px rgba(45, 42, 38, 0.12);
+      position: relative;
+    }
+    #stage iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: var(--bg);
+    }
+
+    /* Chrome */
+    #chrome {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 18px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      font-size: 13px;
+      color: var(--muted);
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      box-shadow: 0 4px 16px rgba(45, 42, 38, 0.06);
+    }
+    #present.active #chrome { opacity: 1; }
+    #chrome button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      transition: background 0.15s ease;
+    }
+    #chrome button:hover { background: rgba(88,166,255,0.12); border-color: var(--accent); }
+    #counter { min-width: 64px; text-align: center; }
+
+    .hint {
+      position: fixed;
+      top: 24px;
+      right: 28px;
+      color: var(--muted);
+      font-size: 12px;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <div id="overview"></div>
+
+  <div id="present">
+    <div id="stage"><iframe id="stageFrame" src=""></iframe></div>
+    <div id="chrome">
+      <button id="btnPrev" title="上一页 (←)">‹</button>
+      <span id="counter">1 / 1</span>
+      <button id="btnNext" title="下一页 (→)">›</button>
+      <button id="btnExit" title="退出概览 (Esc)">✕</button>
+    </div>
+  </div>
+
+  <div class="hint">点击幻灯片进入演示 · ← → 翻页 · ESC 退出</div>
+
+  <script>
+    const MANIFEST = [
+      { file: "slides/01-title.html", label: "标题页" },
+      { file: "slides/02-agenda.html", label: "议程" },
+      { file: "slides/03-scenario.html", label: "场景设定" },
+      { file: "slides/04-pain-points.html", label: "痛点 1：文档散落" },
+      { file: "slides/05-pain-tracking.html", label: "痛点 2：变更不可追踪" },
+      { file: "slides/06-pain-prototype.html", label: "痛点 3：原型与代码割裂" },
+      { file: "slides/07-github-hub.html", label: "转机：GitHub 作为产研中台" },
+      { file: "slides/08-github-ai-era.html", label: "AI 时代的 GitHub" },
+      { file: "slides/09-docs.html", label: "GitHub 文档管理" },
+      { file: "slides/10-changes.html", label: "查看变更" },
+      { file: "slides/11-idea-to-doc.html", label: "Idea → 文档" },
+      { file: "slides/12-idea-to-url.html", label: "Idea → 可访问 URL" },
+      { file: "slides/13-repos.html", label: "本地与远程仓库" },
+      { file: "slides/14-ai-sync.html", label: "AI 辅助同步" },
+      { file: "slides/15-workflow.html", label: "完整工作流" },
+      { file: "slides/16-workflow-detail.html", label: "我的工作流" },
+      { file: "slides/17-extras.html", label: "其它协作工具" },
+      { file: "slides/18-boundaries.html", label: "踩坑与边界" },
+      { file: "slides/19-takeaways.html", label: "一页总结" },
+      { file: "slides/20-qa.html", label: "Q&A" }
+    ];
+
+    const overview = document.getElementById('overview');
+    const present = document.getElementById('present');
+    const stage = document.getElementById('stage');
+    const stageFrame = document.getElementById('stageFrame');
+    const counter = document.getElementById('counter');
+    let current = 0;
+
+    function scaleOverviewCards() {
+      document.querySelectorAll('.slide-card iframe').forEach(iframe => {
+        const card = iframe.closest('.slide-card');
+        const scale = card.clientWidth / 1920;
+        iframe.style.transform = `scale(${scale})`;
+        iframe.style.width = '1920px';
+        iframe.style.height = '1080px';
+      });
+    }
+
+    function renderOverview() {
+      overview.innerHTML = '';
+      MANIFEST.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'slide-card';
+        card.innerHTML = `
+          <iframe src="${item.file}" loading="lazy"></iframe>
+          <div class="label"><strong>${String(idx + 1).padStart(2, '0')}</strong><span>${item.label}</span></div>
+        `;
+        card.addEventListener('click', () => enter(idx));
+        overview.appendChild(card);
+      });
+      // wait for layout
+      requestAnimationFrame(() => {
+        requestAnimationFrame(scaleOverviewCards);
+      });
+    }
+
+    function scaleStage() {
+      const padding = 48;
+      const availW = window.innerWidth - padding * 2;
+      const availH = window.innerHeight - padding * 2;
+      const scale = Math.min(availW / 1920, availH / 1080, 1);
+      stage.style.transform = `scale(${scale})`;
+    }
+
+    function enter(idx) {
+      current = idx;
+      stageFrame.src = MANIFEST[current].file;
+      counter.textContent = `${current + 1} / ${MANIFEST.length}`;
+      present.classList.add('active');
+      overview.classList.add('hidden');
+      scaleStage();
+    }
+
+    function exit() {
+      present.classList.remove('active');
+      overview.classList.remove('hidden');
+      stageFrame.src = '';
+      scaleOverviewCards();
+    }
+
+    function go(delta) {
+      const next = current + delta;
+      if (next < 0 || next >= MANIFEST.length) return;
+      current = next;
+      stageFrame.src = MANIFEST[current].file;
+      counter.textContent = `${current + 1} / ${MANIFEST.length}`;
+    }
+
+    document.getElementById('btnPrev').addEventListener('click', (e) => { e.stopPropagation(); go(-1); });
+    document.getElementById('btnNext').addEventListener('click', (e) => { e.stopPropagation(); go(1); });
+    document.getElementById('btnExit').addEventListener('click', (e) => { e.stopPropagation(); exit(); });
+
+    document.addEventListener('keydown', (e) => {
+      if (!present.classList.contains('active')) return;
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+      if (e.key === 'Escape') { e.preventDefault(); exit(); }
+    });
+
+    window.addEventListener('resize', () => {
+      if (present.classList.contains('active')) scaleStage();
+      else scaleOverviewCards();
+    });
+
+    renderOverview();
+  </script>
+</body>
+</html>
